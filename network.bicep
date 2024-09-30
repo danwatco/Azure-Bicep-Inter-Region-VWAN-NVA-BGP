@@ -2631,7 +2631,7 @@ resource resVmSpoke4CustomScript 'Microsoft.Compute/virtualMachines/extensions@2
     settings: {}
     protectedSettings: {
       fileUris: [
-        'https://raw.githubusercontent.com/dmauser/AzureVM-Router/master/scripts/linuxrouterbgpfrr.sh'
+        'https://raw.githubusercontent.com/simonhutson/Azure-Bicep-Inter-Region-VWAN-NVA-BGP/refs/heads/main/linuxrouterbgpfrr.sh'
       ]
       commandToExecute: 'sh linuxrouterbgpfrr.sh ${parVmUserName} 65002 ${resSpoke4Nic.properties.ipConfigurations[0].properties.privateIPAddress} 10.4.0.0/16 ${resVwanHub1.properties.virtualRouterIps[0]} ${resVwanHub1.properties.virtualRouterIps[1]}'
     }
