@@ -9,7 +9,7 @@ targetScope = 'subscription'
 param currentDate string = utcNow('u')
 
 @description('The Resource Group name.')
-param parRgName string = 'SRH-VWAN-NVA-BGP'
+param parRgName string = 'VWAN-NVA-BGP'
 
 @description('The Resource Group name.')
 @secure()
@@ -31,6 +31,6 @@ module network 'network.bicep' = {
     parVwanHub1Region: 'uksouth'
     parVwanHub2Region: 'swedencentral'
     parVmPassword: parVmPassword
-    parVmUserName: 'srh'
+    parVmUserName: 'azureuser'
   }
 }

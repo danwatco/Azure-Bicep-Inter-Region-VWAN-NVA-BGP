@@ -21,7 +21,7 @@ param parVwanHub2Region string = 'swedencentral'
 param parVmPassword string
 
 @description('The password for VM admins.')
-param parVmUserName string = 'srh'
+param parVmUserName string = 'azureuser'
 
 
 // ---------
@@ -157,7 +157,9 @@ var varConnectionBranch2Hub2Gw2Name = '${varVnetBranch2Name}-to-${varVwanHub2Nam
 var varVmBranch1Name = 'vm-${varVnetBranch1Name}'
 var varVmBranch2Name = 'vm-${varVnetBranch2Name}'
 var varVmSpoke1Name = 'vm-${varVnetSpoke1Name}'
+var varVmSpoke2Name = 'vm-${varVnetSpoke2Name}'
 var varVmSpoke3Name = 'vm-${varVnetSpoke3Name}'
+var varVmSpoke4Name = 'vm-${varVnetSpoke4Name}'
 var varVmSpoke5Name = 'vm-${varVnetSpoke5Name}'
 var varVmSpoke6Name = 'vm-${varVnetSpoke6Name}'
 var varVmSpoke7Name = 'vm-${varVnetSpoke7Name}'
@@ -172,19 +174,29 @@ var varVmSpoke6ExtensionAntimalware = 'extension-antimalware-${varVmSpoke6Name}'
 var varVmSpoke7ExtensionAntimalware = 'extension-antimalware-${varVmSpoke7Name}'
 var varVmSpoke8ExtensionAntimalware = 'extension-antimalware-${varVmSpoke8Name}'
 
+var varVmSpoke2ExtensionAadLogin = 'extension-aadlogin-${varVmSpoke2Name}'
+var varVmSpoke4ExtensionAadLogin = 'extension-aadlogin-${varVmSpoke4Name}'
+
 var varVmBranch1ExtensionAutomanage = 'extension-automanage-${varVmBranch1Name}'
 var varVmBranch2ExtensionAutomanage = 'extension-automanage-${varVmBranch2Name}'
 var varVmSpoke1ExtensionAutomanage = 'extension-automanage-${varVmSpoke1Name}'
+var varVmSpoke2ExtensionAutomanage = 'extension-automanage-${varVmSpoke2Name}'
 var varVmSpoke3ExtensionAutomanage = 'extension-automanage-${varVmSpoke3Name}'
+var varVmSpoke4ExtensionAutomanage = 'extension-automanage-${varVmSpoke4Name}'
 var varVmSpoke5ExtensionAutomanage = 'extension-automanage-${varVmSpoke5Name}'
 var varVmSpoke6ExtensionAutomanage = 'extension-automanage-${varVmSpoke6Name}'
 var varVmSpoke7ExtensionAutomanage = 'extension-automanage-${varVmSpoke7Name}'
 var varVmSpoke8ExtensionAutomanage = 'extension-automanage-${varVmSpoke8Name}'
 
+var varVmSpoke2ExtensionCustomScript = 'extension-customscript-${varVmSpoke2Name}'
+var varVmSpoke4ExtensionCustomScript = 'extension-customscript-${varVmSpoke4Name}'
+
 var varVmBranch1Schedule = 'shutdown-computevm-${varVmBranch1Name}'
 var varVmBranch2Schedule = 'shutdown-computevm-${varVmBranch2Name}'
 var varVmSpoke1Schedule = 'shutdown-computevm-${varVmSpoke1Name}'
+var varVmSpoke2Schedule = 'shutdown-computevm-${varVmSpoke2Name}'
 var varVmSpoke3Schedule = 'shutdown-computevm-${varVmSpoke3Name}'
+var varVmSpoke4Schedule = 'shutdown-computevm-${varVmSpoke4Name}'
 var varVmSpoke5Schedule = 'shutdown-computevm-${varVmSpoke5Name}'
 var varVmSpoke6Schedule = 'shutdown-computevm-${varVmSpoke6Name}'
 var varVmSpoke7Schedule = 'shutdown-computevm-${varVmSpoke7Name}'
@@ -1030,9 +1042,9 @@ resource resConnectionBranch2Hub2Gw2 'Microsoft.Network/connections@2024-01-01' 
   }
 }
 
-// --------------
-// RESOURCES (VM)
-// --------------
+// ----------------------
+// RESOURCES (WINDOWS VM)
+// ----------------------
 
 resource resVmBranch1 'Microsoft.Compute/virtualMachines@2024-07-01' = {
   name: varVmBranch1Name
@@ -1067,6 +1079,11 @@ resource resVmBranch1 'Microsoft.Compute/virtualMachines@2024-07-01' = {
       adminPassword: parVmPassword
       windowsConfiguration: {
         provisionVMAgent: true
+        enableAutomaticUpdates: true
+        patchSettings: {
+          patchMode: 'AutomaticByPlatform'
+          assessmentMode: 'AutomaticByPlatform'
+        }
       }
       allowExtensionOperations: true
     }
@@ -1145,6 +1162,20 @@ resource resVmBranch1Antmalware 'Microsoft.Compute/virtualMachines/extensions@20
   }
 }
 
+// resource resVmBranch1Aadlogin 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
+//   name: varVmBranch1ExtensionAadLogin
+//   location: varVnetBranch1Region
+//   parent: resVmBranch1
+//   properties: {
+//     publisher: 'Microsoft.Azure.ActiveDirectory'
+//     type: 'AADLoginForWindows'
+//     typeHandlerVersion: '1.0'
+//     autoUpgradeMinorVersion: true
+//     settings: {}
+//     protectedSettings: {}
+//   }
+// }
+
 resource resVmBranch1Automanage 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
   name: varVmBranch1ExtensionAutomanage
   location: varVnetBranch1Region
@@ -1211,6 +1242,11 @@ resource resVmBranch2 'Microsoft.Compute/virtualMachines@2024-07-01' = {
       adminPassword: parVmPassword
       windowsConfiguration: {
         provisionVMAgent: true
+        enableAutomaticUpdates: true
+        patchSettings: {
+          patchMode: 'AutomaticByPlatform'
+          assessmentMode: 'AutomaticByPlatform'
+        }
       }
       allowExtensionOperations: true
     }
@@ -1289,6 +1325,20 @@ resource resVmBranch2Antmalware 'Microsoft.Compute/virtualMachines/extensions@20
   }
 }
 
+// resource resVmBranch2Aadlogin 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
+//   name: varVmBranch2ExtensionAadLogin
+//   location: varVnetBranch2Region
+//   parent: resVmBranch2
+//   properties: {
+//     publisher: 'Microsoft.Azure.ActiveDirectory'
+//     type: 'AADLoginForWindows'
+//     typeHandlerVersion: '1.0'
+//     autoUpgradeMinorVersion: true
+//     settings: {}
+//     protectedSettings: {}
+//   }
+// }
+
 resource resVmBranch2Automanage 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
   name: varVmBranch2ExtensionAutomanage
   location: varVnetBranch2Region
@@ -1354,6 +1404,11 @@ resource resVmSpoke1 'Microsoft.Compute/virtualMachines@2024-07-01' = {
       adminUsername: parVmUserName
       adminPassword: parVmPassword
       windowsConfiguration: {
+        enableAutomaticUpdates: true
+        patchSettings: {
+          patchMode: 'AutomaticByPlatform'
+          assessmentMode: 'AutomaticByPlatform'
+        }
         provisionVMAgent: true
       }
       allowExtensionOperations: true
@@ -1433,6 +1488,20 @@ resource resVmSpoke1Antmalware 'Microsoft.Compute/virtualMachines/extensions@202
   }
 }
 
+// resource resVmSpoke1Aadlogin 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
+//   name: varVmSpoke1ExtensionAadLogin
+//   location: varVnetSpoke1Region
+//   parent: resVmSpoke1
+//   properties: {
+//     publisher: 'Microsoft.Azure.ActiveDirectory'
+//     type: 'AADLoginForWindows'
+//     typeHandlerVersion: '1.0'
+//     autoUpgradeMinorVersion: true
+//     settings: {}
+//     protectedSettings: {}
+//   }
+// }
+
 resource resVmSpoke1Automanage 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
   name: varVmSpoke1ExtensionAutomanage
   location: varVnetSpoke1Region
@@ -1499,6 +1568,11 @@ resource resVmSpoke3 'Microsoft.Compute/virtualMachines@2024-07-01' = {
       adminPassword: parVmPassword
       windowsConfiguration: {
         provisionVMAgent: true
+        enableAutomaticUpdates: true
+        patchSettings: {
+          patchMode: 'AutomaticByPlatform'
+          assessmentMode: 'AutomaticByPlatform'
+        }
       }
       allowExtensionOperations: true
     }
@@ -1577,6 +1651,20 @@ resource resVmSpoke3Antmalware 'Microsoft.Compute/virtualMachines/extensions@202
   }
 }
 
+// resource resVmSpoke3Aadlogin 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
+//   name: varVmSpoke3ExtensionAadLogin
+//   location: varVnetSpoke3Region
+//   parent: resVmSpoke3
+//   properties: {
+//     publisher: 'Microsoft.Azure.ActiveDirectory'
+//     type: 'AADLoginForWindows'
+//     typeHandlerVersion: '1.0'
+//     autoUpgradeMinorVersion: true
+//     settings: {}
+//     protectedSettings: {}
+//   }
+// }
+
 resource resVmSpoke3Automanage 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
   name: varVmSpoke3ExtensionAutomanage
   location: varVnetSpoke3Region
@@ -1643,6 +1731,11 @@ resource resVmSpoke5 'Microsoft.Compute/virtualMachines@2024-07-01' = {
       adminPassword: parVmPassword
       windowsConfiguration: {
         provisionVMAgent: true
+        enableAutomaticUpdates: true
+        patchSettings: {
+          patchMode: 'AutomaticByPlatform'
+          assessmentMode: 'AutomaticByPlatform'
+        }
       }
       allowExtensionOperations: true
     }
@@ -1721,6 +1814,20 @@ resource resVmSpoke5Antmalware 'Microsoft.Compute/virtualMachines/extensions@202
   }
 }
 
+// resource resVmSpoke5Aadlogin 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
+//   name: varVmSpoke5ExtensionAadLogin
+//   location: varVnetSpoke5Region
+//   parent: resVmSpoke5
+//   properties: {
+//     publisher: 'Microsoft.Azure.ActiveDirectory'
+//     type: 'AADLoginForWindows'
+//     typeHandlerVersion: '1.0'
+//     autoUpgradeMinorVersion: true
+//     settings: {}
+//     protectedSettings: {}
+//   }
+// }
+
 resource resVmSpoke5Automanage 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
   name: varVmSpoke5ExtensionAutomanage
   location: varVnetSpoke5Region
@@ -1787,6 +1894,11 @@ resource resVmSpoke6 'Microsoft.Compute/virtualMachines@2024-07-01' = {
       adminPassword: parVmPassword
       windowsConfiguration: {
         provisionVMAgent: true
+        enableAutomaticUpdates: true
+        patchSettings: {
+          patchMode: 'AutomaticByPlatform'
+          assessmentMode: 'AutomaticByPlatform'
+        }
       }
       allowExtensionOperations: true
     }
@@ -1865,6 +1977,20 @@ resource resVmSpoke6Antmalware 'Microsoft.Compute/virtualMachines/extensions@202
   }
 }
 
+// resource resVmSpoke6Aadlogin 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
+//   name: varVmSpoke6ExtensionAadLogin
+//   location: varVnetSpoke6Region
+//   parent: resVmSpoke6
+//   properties: {
+//     publisher: 'Microsoft.Azure.ActiveDirectory'
+//     type: 'AADLoginForWindows'
+//     typeHandlerVersion: '1.0'
+//     autoUpgradeMinorVersion: true
+//     settings: {}
+//     protectedSettings: {}
+//   }
+// }
+
 resource resVmSpoke6Automanage 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
   name: varVmSpoke6ExtensionAutomanage
   location: varVnetSpoke6Region
@@ -1931,6 +2057,11 @@ resource resVmSpoke7 'Microsoft.Compute/virtualMachines@2024-07-01' = {
       adminPassword: parVmPassword
       windowsConfiguration: {
         provisionVMAgent: true
+        enableAutomaticUpdates: true
+        patchSettings: {
+          patchMode: 'AutomaticByPlatform'
+          assessmentMode: 'AutomaticByPlatform'
+        }
       }
       allowExtensionOperations: true
     }
@@ -2009,6 +2140,20 @@ resource resVmSpoke7Antmalware 'Microsoft.Compute/virtualMachines/extensions@202
   }
 }
 
+// resource resVmSpoke7Aadlogin 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
+//   name: varVmSpoke7ExtensionAadLogin
+//   location: varVnetSpoke7Region
+//   parent: resVmSpoke7
+//   properties: {
+//     publisher: 'Microsoft.Azure.ActiveDirectory'
+//     type: 'AADLoginForWindows'
+//     typeHandlerVersion: '1.0'
+//     autoUpgradeMinorVersion: true
+//     settings: {}
+//     protectedSettings: {}
+//   }
+// }
+
 resource resVmSpoke7Automanage 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
   name: varVmSpoke7ExtensionAutomanage
   location: varVnetSpoke7Region
@@ -2075,6 +2220,11 @@ resource resVmSpoke8 'Microsoft.Compute/virtualMachines@2024-07-01' = {
       adminPassword: parVmPassword
       windowsConfiguration: {
         provisionVMAgent: true
+        enableAutomaticUpdates: true
+        patchSettings: {
+          patchMode: 'AutomaticByPlatform'
+          assessmentMode: 'AutomaticByPlatform'
+        }
       }
       allowExtensionOperations: true
     }
@@ -2153,6 +2303,20 @@ resource resVmSpoke8Antmalware 'Microsoft.Compute/virtualMachines/extensions@202
   }
 }
 
+// resource resVmSpoke8Aadlogin 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
+//   name: varVmSpoke8ExtensionAadLogin
+//   location: varVnetSpoke8Region
+//   parent: resVmSpoke8
+//   properties: {
+//     publisher: 'Microsoft.Azure.ActiveDirectory'
+//     type: 'AADLoginForWindows'
+//     typeHandlerVersion: '1.0'
+//     autoUpgradeMinorVersion: true
+//     settings: {}
+//     protectedSettings: {}
+//   }
+// }
+
 resource resVmSpoke8Automanage 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
   name: varVmSpoke8ExtensionAutomanage
   location: varVnetSpoke8Region
@@ -2186,6 +2350,310 @@ resource resVmSpoke8Schedule 'Microsoft.DevTestLab/schedules@2018-09-15' = {
   }
 }
 
+// --------------------
+// RESOURCES (LINUX VM)
+// --------------------
 
+resource resVmSpoke2 'Microsoft.Compute/virtualMachines@2024-07-01' = {
+  name: varVmSpoke2Name
+  location: varVnetSpoke2Region
+  dependsOn: [
+    resVnetSpoke2
+  ]
+  identity: {
+    type: 'SystemAssigned'
+  }
+  properties:{
+    hardwareProfile:{
+      vmSize: 'Standard_D2s_v5'
+    }
+    storageProfile:{
+      imageReference: {
+        publisher: 'canonical'
+        offer: '0001-com-ubuntu-server-jammy'
+        sku: '22_04-lts-gen2'
+        version: 'latest'
+      }
+      osDisk: {
+        osType: 'Linux'
+        createOption: 'FromImage'
+        caching: 'ReadWrite'
+        deleteOption: 'Delete'
+      }
+      dataDisks: []
+    }
+    osProfile: {
+      computerName: varVmSpoke2Name
+      adminUsername: parVmUserName
+      adminPassword: parVmPassword
+      linuxConfiguration: {
+        provisionVMAgent: true
+        disablePasswordAuthentication: false
+        patchSettings: {
+          patchMode: 'AutomaticByPlatform'
+          assessmentMode: 'AutomaticByPlatform'
+        }
+      }
+      allowExtensionOperations: true
+    }
+    networkProfile: {
+      networkApiVersion: '2024-01-01'
+      networkInterfaceConfigurations: [
+        {
+          name: '${varVmSpoke2Name}-nic'
+          properties: {
+            primary: true
+            ipConfigurations: [
+              {
+                name: '${varVmSpoke2Name}-nic-ipconfig1'
+                properties: {
+                  primary: true
+                  privateIPAddressVersion: 'IPv4'
+                  subnet:{
+                    id: varVnetSpoke2Subnet1Ref
+                  }
+                  publicIPAddressConfiguration: {
+                    name: '${varVmSpoke2Name}-nic-ipconfig1-pip'
+                    properties: {
+                      deleteOption: 'Delete'
+                      publicIPAddressVersion: 'IPv4'
+                      publicIPAllocationMethod: 'Static'
+                    }
+                  }
+                }
+              }
+            ]
+            deleteOption: 'Delete'
+          }
+        }
+      ]
+    }
+    securityProfile:{
+      uefiSettings:{
+        secureBootEnabled: true
+        vTpmEnabled: true
+      }
+      securityType: 'TrustedLaunch'
+    }
+    diagnosticsProfile: {
+      bootDiagnostics: {
+        enabled: true
+      }
+    }
+  }
+}
+
+resource resVmSpoke2Aadlogin 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
+  name: varVmSpoke2ExtensionAadLogin
+  location: varVnetSpoke2Region
+  parent: resVmSpoke2
+  properties: {
+    publisher: 'Microsoft.Azure.ActiveDirectory'
+    type: 'AADSSHLoginForLinux'
+    typeHandlerVersion: '1.0'
+    autoUpgradeMinorVersion: true
+    settings: {}
+    protectedSettings: {}
+  }
+}
+
+resource resVmSpoke2Automanage 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
+  name: varVmSpoke2ExtensionAutomanage
+  location: varVnetSpoke2Region
+  parent: resVmSpoke2
+  properties: {
+    publisher: 'Microsoft.GuestConfiguration'
+    type: 'ConfigurationforLinux'
+    typeHandlerVersion: '1.0'
+    autoUpgradeMinorVersion: true
+    enableAutomaticUpgrade: true
+    settings: {}
+    protectedSettings: {}
+  }
+}
+
+resource resVmSpoke2Schedule 'Microsoft.DevTestLab/schedules@2018-09-15' = {
+  name: varVmSpoke2Schedule
+  location: varVnetSpoke2Region
+  properties: {
+    targetResourceId: resVmSpoke2.id
+    taskType: 'ComputeVmShutdownTask'
+    dailyRecurrence: {
+      time: '0300'
+    }
+    timeZoneId: 'GMT Standard Time'
+    notificationSettings: {
+      status: 'Disabled'
+      timeInMinutes: 30
+       notificationLocale: 'en'
+    }
+  }
+}
+
+resource resVmSpoke4 'Microsoft.Compute/virtualMachines@2024-07-01' = {
+  name: varVmSpoke4Name
+  location: varVnetSpoke4Region
+  identity: {
+    type: 'SystemAssigned'
+  }
+  properties:{
+    hardwareProfile:{
+      vmSize: 'Standard_D2s_v5'
+    }
+    storageProfile:{
+      imageReference: {
+        publisher: 'canonical'
+        offer: '0001-com-ubuntu-server-jammy'
+        sku: '22_04-lts-gen2'
+        version: 'latest'
+      }
+      osDisk: {
+        osType: 'Linux'
+        createOption: 'FromImage'
+        caching: 'ReadWrite'
+        deleteOption: 'Delete'
+      }
+      dataDisks: []
+    }
+    osProfile: {
+      computerName: varVmSpoke4Name
+      adminUsername: parVmUserName
+      adminPassword: parVmPassword
+      linuxConfiguration: {
+        provisionVMAgent: true
+        disablePasswordAuthentication: false
+        patchSettings: {
+          patchMode: 'AutomaticByPlatform'
+          assessmentMode: 'AutomaticByPlatform'
+        }
+      }
+      allowExtensionOperations: true
+    }
+    networkProfile: {
+      networkInterfaces: [
+        {
+          id: resSpoke4Nic.id
+          properties: {
+            deleteOption: 'Delete'
+            primary: true
+          }
+        }
+      ]
+    }
+    securityProfile:{
+      uefiSettings:{
+        secureBootEnabled: true
+        vTpmEnabled: true
+      }
+      securityType: 'TrustedLaunch'
+    }
+    diagnosticsProfile: {
+      bootDiagnostics: {
+        enabled: true
+      }
+    }
+  }
+}
+
+resource resSpoke4Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
+  name: '${varVmSpoke4Name}-nic'
+  location: varVnetSpoke4Region
+  dependsOn: [
+    resVnetSpoke4
+  ]
+    properties: {
+    ipConfigurations: [
+      {
+        name: '${varVmSpoke4Name}-nic-ipconfig1'
+        properties: {
+          primary: true
+          privateIPAddressVersion: 'IPv4'
+          subnet:{
+            id: varVnetSpoke4Subnet1Ref
+          }
+          publicIPAddress: {
+            id: resSpoke4Pip.id
+          }
+        }
+      }
+    ]
+  }
+}
+
+resource resSpoke4Pip 'Microsoft.Network/publicIPAddresses@2024-01-01' = {
+  name: '${varVmSpoke4Name}-nic-ipconfig1-pip'
+  location: varVnetSpoke4Region
+  properties: {
+    deleteOption: 'Delete'
+    publicIPAddressVersion: 'IPv4'
+    publicIPAllocationMethod: 'Static'
+  }
+}
+
+resource resVmSpoke4Aadlogin 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
+  name: varVmSpoke4ExtensionAadLogin
+  location: varVnetSpoke4Region
+  parent: resVmSpoke4
+  properties: {
+    publisher: 'Microsoft.Azure.ActiveDirectory'
+    type: 'AADSSHLoginForLinux'
+    typeHandlerVersion: '1.0'
+    autoUpgradeMinorVersion: true
+    settings: {}
+    protectedSettings: {}
+  }
+}
+
+resource resVmSpoke4Automanage 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
+  name: varVmSpoke4ExtensionAutomanage
+  location: varVnetSpoke4Region
+  parent: resVmSpoke4
+  properties: {
+    publisher: 'Microsoft.GuestConfiguration'
+    type: 'ConfigurationforLinux'
+    typeHandlerVersion: '1.0'
+    autoUpgradeMinorVersion: true
+    enableAutomaticUpgrade: true
+    settings: {}
+    protectedSettings: {}
+  }
+}
+
+resource resVmSpoke4CustomScript 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
+  name: varVmSpoke4ExtensionCustomScript
+  location: varVnetSpoke4Region
+  parent: resVmSpoke4
+  properties: {
+    publisher: 'Microsoft.Azure.Extensions'
+    type: 'CustomScript'
+    typeHandlerVersion: '2.1'
+    autoUpgradeMinorVersion: true
+    settings: {}
+    protectedSettings: {
+      fileUris: [
+        'https://raw.githubusercontent.com/dmauser/AzureVM-Router/master/scripts/linuxrouterbgpfrr.sh'
+      ]
+      commandToExecute: 'sh linuxrouterbgpfrr.sh ${parVmUserName} 65002 ${resSpoke4Nic.properties.ipConfigurations[0].properties.privateIPAddress} 10.4.0.0/16 ${resVwanHub1.properties.virtualRouterIps[0]} ${resVwanHub1.properties.virtualRouterIps[1]}'
+    }
+  }
+}
+
+resource resVmSpoke4Schedule 'Microsoft.DevTestLab/schedules@2018-09-15' = {
+  name: varVmSpoke4Schedule
+  location: varVnetSpoke4Region
+  properties: {
+    targetResourceId: resVmSpoke4.id
+    taskType: 'ComputeVmShutdownTask'
+    dailyRecurrence: {
+      time: '0300'
+    }
+    timeZoneId: 'GMT Standard Time'
+    notificationSettings: {
+      status: 'Disabled'
+      timeInMinutes: 30
+       notificationLocale: 'en'
+    }
+  }
+}
 
 
