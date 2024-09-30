@@ -1,0 +1,9 @@
+az login
+# az account list --output table
+az account set -s "70c94ea2-4df5-4b9b-86c2-a8eaf0e4709b"
+
+az deployment sub create `
+  --location uksouth `
+  --template-file ./main.bicep `
+  --parameters ./parameters.json `
+  --what-if
