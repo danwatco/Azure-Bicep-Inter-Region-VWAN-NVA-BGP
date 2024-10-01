@@ -3028,6 +3028,7 @@ resource resSpoke2LoadBalancer 'Microsoft.Network/loadBalancers@2024-01-01' = {
     backendAddressPools: [
       {
         name: varSpoke2LoadBalancerBackEndName
+        id: resVnetSpoke2.id
         properties: {
           loadBalancerBackendAddresses: [
             {
@@ -3452,6 +3453,9 @@ resource resSpoke4LoadBalancer 'Microsoft.Network/loadBalancers@2024-01-01' = {
       {
         name: varSpoke4LoadBalancerBackEndName
         properties: {
+          virtualNetwork: {
+            id: resVnetSpoke4.id
+          }
           loadBalancerBackendAddresses: [
             {
               name: varVmSpoke41Name
