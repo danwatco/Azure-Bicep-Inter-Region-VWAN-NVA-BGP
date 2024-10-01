@@ -9,11 +9,35 @@ metadata description = 'Create a two-region, Virtual WAN environemnt with NVA sp
 param parVwanRegion string = resourceGroup().location
 
 @description('The virtual WAN hub 1 region.')
-@allowed(['northeurope','westeurope','uksouth','swedencentral','francecentral','germanywestcentral','italynorth','norwayeast','polandcentral','switzerlandnorth','spaincentral'])
+@allowed([
+  'northeurope'
+  'westeurope'
+  'uksouth'
+  'swedencentral'
+  'francecentral'
+  'germanywestcentral'
+  'italynorth'
+  'norwayeast'
+  'polandcentral'
+  'switzerlandnorth'
+  'spaincentral'
+])
 param parVwanHub1Region string = 'uksouth'
 
 @description('The virtual WAN hub 2 region.')
-@allowed(['northeurope','westeurope','uksouth','swedencentral','francecentral','germanywestcentral','italynorth','norwayeast','polandcentral','switzerlandnorth','spaincentral'])
+@allowed([
+  'northeurope'
+  'westeurope'
+  'uksouth'
+  'swedencentral'
+  'francecentral'
+  'germanywestcentral'
+  'italynorth'
+  'norwayeast'
+  'polandcentral'
+  'switzerlandnorth'
+  'spaincentral'
+])
 param parVwanHub2Region string = 'swedencentral'
 
 @description('The password for VM admins.')
@@ -22,7 +46,6 @@ param parVmPassword string
 
 @description('The user name for VM admins.')
 param parVmUserName string = 'azureuser'
-
 
 // ---------
 // VARIABLES
@@ -36,81 +59,139 @@ var varVwanHub1AddressPrefix = '192.168.1.0/24'
 var varVwanHub2Name = 'hub2'
 var varVwanHub2AddressPrefix = '192.168.2.0/24'
 
+var varVwanAsn = 65515
+var varOnPremisesAsn = 65510
+var varSpoke2Asn = 65002
+var varSpoke4Asn = 65004
+
+var varVwanHub1VmSpoke21BgpConnectionName = '${varVmSpoke21Name}-bgp-conn'
+var varVwanHub1VmSpoke22BgpConnectionName = '${varVmSpoke22Name}-bgp-conn'
+var varVwanHub2VmSpoke41BgpConnectionName = '${varVmSpoke41Name}-bgp-conn'
+var varVwanHub2VmSpoke42BgpConnectionName = '${varVmSpoke42Name}-bgp-conn'
+
 var varVnetBranch1Name = 'branch1'
 var varVnetBranch1Region = parVwanHub1Region
 var varVnetBranch1AddressPrefix = '10.100.0.0/16'
 var varVnetBranch1Subnet1Name = 'main'
 var varVnetBranch1Subnet1AddressPrefix = '10.100.0.0/24'
-var varVnetBranch1Subnet1Ref = resourceId('Microsoft.Network/virtualNetworks/subnets', varVnetBranch1Name, varVnetBranch1Subnet1Name)
+var varVnetBranch1Subnet1Ref = resourceId(
+  'Microsoft.Network/virtualNetworks/subnets',
+  varVnetBranch1Name,
+  varVnetBranch1Subnet1Name
+)
 var varVnetBranch1Subnet2Name = 'GatewaySubnet'
 var varVnetBranch1Subnet2AddressPrefix = '10.100.100.0/26'
-var varVnetBranch1Subnet2Ref = resourceId('Microsoft.Network/virtualNetworks/subnets', varVnetBranch1Name, varVnetBranch1Subnet2Name)
+var varVnetBranch1Subnet2Ref = resourceId(
+  'Microsoft.Network/virtualNetworks/subnets',
+  varVnetBranch1Name,
+  varVnetBranch1Subnet2Name
+)
 
 var varVnetBranch2Name = 'branch2'
 var varVnetBranch2Region = parVwanHub2Region
 var varVnetBranch2AddressPrefix = '10.200.0.0/16'
 var varVnetBranch2Subnet1Name = 'main'
 var varVnetBranch2Subnet1AddressPrefix = '10.200.0.0/24'
-var varVnetBranch2Subnet1Ref = resourceId('Microsoft.Network/virtualNetworks/subnets', varVnetBranch2Name, varVnetBranch2Subnet1Name)
+var varVnetBranch2Subnet1Ref = resourceId(
+  'Microsoft.Network/virtualNetworks/subnets',
+  varVnetBranch2Name,
+  varVnetBranch2Subnet1Name
+)
 var varVnetBranch2Subnet2Name = 'GatewaySubnet'
 var varVnetBranch2Subnet2AddressPrefix = '10.200.100.0/26'
-var varVnetBranch2Subnet2Ref = resourceId('Microsoft.Network/virtualNetworks/subnets', varVnetBranch2Name, varVnetBranch2Subnet2Name)
+var varVnetBranch2Subnet2Ref = resourceId(
+  'Microsoft.Network/virtualNetworks/subnets',
+  varVnetBranch2Name,
+  varVnetBranch2Subnet2Name
+)
 
 var varVnetSpoke1Name = 'spoke1'
 var varVnetSpoke1Region = parVwanHub1Region
 var varVnetSpoke1AddressPrefix = '10.1.0.0/24'
 var varVnetSpoke1Subnet1Name = 'main'
 var varVnetSpoke1Subnet1AddressPrefix = '10.1.0.0/27'
-var varVnetSpoke1Subnet1Ref = resourceId('Microsoft.Network/virtualNetworks/subnets', varVnetSpoke1Name, varVnetSpoke1Subnet1Name)
+var varVnetSpoke1Subnet1Ref = resourceId(
+  'Microsoft.Network/virtualNetworks/subnets',
+  varVnetSpoke1Name,
+  varVnetSpoke1Subnet1Name
+)
 
 var varVnetSpoke2Name = 'spoke2'
 var varVnetSpoke2Region = parVwanHub1Region
 var varVnetSpoke2AddressPrefix = '10.2.0.0/24'
 var varVnetSpoke2Subnet1Name = 'main'
 var varVnetSpoke2Subnet1AddressPrefix = '10.2.0.0/27'
-var varVnetSpoke2Subnet1Ref = resourceId('Microsoft.Network/virtualNetworks/subnets', varVnetSpoke2Name, varVnetSpoke2Subnet1Name)
+var varVnetSpoke2Subnet1Ref = resourceId(
+  'Microsoft.Network/virtualNetworks/subnets',
+  varVnetSpoke2Name,
+  varVnetSpoke2Subnet1Name
+)
 
 var varVnetSpoke3Name = 'spoke3'
 var varVnetSpoke3Region = parVwanHub2Region
 var varVnetSpoke3AddressPrefix = '10.3.0.0/24'
 var varVnetSpoke3Subnet1Name = 'main'
 var varVnetSpoke3Subnet1AddressPrefix = '10.3.0.0/27'
-var varVnetSpoke3Subnet1Ref = resourceId('Microsoft.Network/virtualNetworks/subnets', varVnetSpoke3Name, varVnetSpoke3Subnet1Name)
+var varVnetSpoke3Subnet1Ref = resourceId(
+  'Microsoft.Network/virtualNetworks/subnets',
+  varVnetSpoke3Name,
+  varVnetSpoke3Subnet1Name
+)
 
 var varVnetSpoke4Name = 'spoke4'
 var varVnetSpoke4Region = parVwanHub2Region
 var varVnetSpoke4AddressPrefix = '10.4.0.0/24'
 var varVnetSpoke4Subnet1Name = 'main'
 var varVnetSpoke4Subnet1AddressPrefix = '10.4.0.0/27'
-var varVnetSpoke4Subnet1Ref = resourceId('Microsoft.Network/virtualNetworks/subnets', varVnetSpoke4Name, varVnetSpoke4Subnet1Name)
+var varVnetSpoke4Subnet1Ref = resourceId(
+  'Microsoft.Network/virtualNetworks/subnets',
+  varVnetSpoke4Name,
+  varVnetSpoke4Subnet1Name
+)
 
 var varVnetSpoke5Name = 'spoke5'
 var varVnetSpoke5Region = parVwanHub1Region
 var varVnetSpoke5AddressPrefix = '10.2.1.0/24'
 var varVnetSpoke5Subnet1Name = 'main'
 var varVnetSpoke5Subnet1AddressPrefix = '10.2.1.0/27'
-var varVnetSpoke5Subnet1Ref = resourceId('Microsoft.Network/virtualNetworks/subnets', varVnetSpoke5Name, varVnetSpoke5Subnet1Name)
+var varVnetSpoke5Subnet1Ref = resourceId(
+  'Microsoft.Network/virtualNetworks/subnets',
+  varVnetSpoke5Name,
+  varVnetSpoke5Subnet1Name
+)
 
 var varVnetSpoke6Name = 'spoke6'
 var varVnetSpoke6Region = parVwanHub1Region
 var varVnetSpoke6AddressPrefix = '10.2.2.0/24'
 var varVnetSpoke6Subnet1Name = 'main'
 var varVnetSpoke6Subnet1AddressPrefix = '10.2.2.0/27'
-var varVnetSpoke6Subnet1Ref = resourceId('Microsoft.Network/virtualNetworks/subnets', varVnetSpoke6Name, varVnetSpoke6Subnet1Name)
+var varVnetSpoke6Subnet1Ref = resourceId(
+  'Microsoft.Network/virtualNetworks/subnets',
+  varVnetSpoke6Name,
+  varVnetSpoke6Subnet1Name
+)
 
 var varVnetSpoke7Name = 'spoke7'
 var varVnetSpoke7Region = parVwanHub2Region
 var varVnetSpoke7AddressPrefix = '10.4.1.0/24'
 var varVnetSpoke7Subnet1Name = 'main'
 var varVnetSpoke7Subnet1AddressPrefix = '10.4.1.0/27'
-var varVnetSpoke7Subnet1Ref = resourceId('Microsoft.Network/virtualNetworks/subnets', varVnetSpoke7Name, varVnetSpoke7Subnet1Name)
+var varVnetSpoke7Subnet1Ref = resourceId(
+  'Microsoft.Network/virtualNetworks/subnets',
+  varVnetSpoke7Name,
+  varVnetSpoke7Subnet1Name
+)
 
 var varVnetSpoke8Name = 'spoke8'
 var varVnetSpoke8Region = parVwanHub2Region
 var varVnetSpoke8AddressPrefix = '10.4.2.0/24'
 var varVnetSpoke8Subnet1Name = 'main'
 var varVnetSpoke8Subnet1AddressPrefix = '10.4.2.0/27'
-var varVnetSpoke8Subnet1Ref = resourceId('Microsoft.Network/virtualNetworks/subnets', varVnetSpoke8Name, varVnetSpoke8Subnet1Name)
+var varVnetSpoke8Subnet1Ref = resourceId(
+  'Microsoft.Network/virtualNetworks/subnets',
+  varVnetSpoke8Name,
+  varVnetSpoke8Subnet1Name
+)
 
 var varVnetPeeringSpoke2to5Name = '${varVnetSpoke2Name}-to-${varVnetSpoke5Name}'
 var varVnetPeeringSpoke5to2Name = '${varVnetSpoke5Name}-to-${varVnetSpoke2Name}'
@@ -157,9 +238,11 @@ var varConnectionBranch2Hub2Gw2Name = '${varVnetBranch2Name}-to-${varVwanHub2Nam
 var varVmBranch1Name = 'vm-${varVnetBranch1Name}'
 var varVmBranch2Name = 'vm-${varVnetBranch2Name}'
 var varVmSpoke1Name = 'vm-${varVnetSpoke1Name}'
-var varVmSpoke2Name = 'vm-${varVnetSpoke2Name}'
+var varVmSpoke21Name = 'vm-${varVnetSpoke2Name}-1'
+var varVmSpoke22Name = 'vm-${varVnetSpoke2Name}-2'
 var varVmSpoke3Name = 'vm-${varVnetSpoke3Name}'
-var varVmSpoke4Name = 'vm-${varVnetSpoke4Name}'
+var varVmSpoke41Name = 'vm-${varVnetSpoke4Name}-1'
+var varVmSpoke42Name = 'vm-${varVnetSpoke4Name}-2'
 var varVmSpoke5Name = 'vm-${varVnetSpoke5Name}'
 var varVmSpoke6Name = 'vm-${varVnetSpoke6Name}'
 var varVmSpoke7Name = 'vm-${varVnetSpoke7Name}'
@@ -168,9 +251,11 @@ var varVmSpoke8Name = 'vm-${varVnetSpoke8Name}'
 var varVmBranch1NicName = '${varVmBranch1Name}-nic'
 var varVmBranch2NicName = '${varVmBranch2Name}-nic'
 var varVmSpoke1NicName = '${varVmSpoke1Name}-nic'
-var varVmSpoke2NicName = '${varVmSpoke2Name}-nic'
+var varVmSpoke21NicName = '${varVmSpoke21Name}-nic'
+var varVmSpoke22NicName = '${varVmSpoke22Name}-nic'
 var varVmSpoke3NicName = '${varVmSpoke3Name}-nic'
-var varVmSpoke4NicName = '${varVmSpoke4Name}-nic'
+var varVmSpoke41NicName = '${varVmSpoke41Name}-nic'
+var varVmSpoke42NicName = '${varVmSpoke42Name}-nic'
 var varVmSpoke5NicName = '${varVmSpoke5Name}-nic'
 var varVmSpoke6NicName = '${varVmSpoke6Name}-nic'
 var varVmSpoke7NicName = '${varVmSpoke7Name}-nic'
@@ -179,9 +264,11 @@ var varVmSpoke8NicName = '${varVmSpoke8Name}-nic'
 var varVmBranch1PipName = '${varVmBranch1Name}-pip'
 var varVmBranch2PipName = '${varVmBranch2Name}-pip'
 var varVmSpoke1PipName = '${varVmSpoke1Name}-pip'
-var varVmSpoke2PipName = '${varVmSpoke2Name}-pip'
+var varVmSpoke21PipName = '${varVmSpoke21Name}-pip'
+var varVmSpoke22PipName = '${varVmSpoke22Name}-pip'
 var varVmSpoke3PipName = '${varVmSpoke3Name}-pip'
-var varVmSpoke4PipName = '${varVmSpoke4Name}-pip'
+var varVmSpoke41PipName = '${varVmSpoke41Name}-pip'
+var varVmSpoke42PipName = '${varVmSpoke42Name}-pip'
 var varVmSpoke5PipName = '${varVmSpoke5Name}-pip'
 var varVmSpoke6PipName = '${varVmSpoke6Name}-pip'
 var varVmSpoke7PipName = '${varVmSpoke7Name}-pip'
@@ -196,33 +283,82 @@ var varVmSpoke6ExtensionAntimalware = 'extension-antimalware-${varVmSpoke6Name}'
 var varVmSpoke7ExtensionAntimalware = 'extension-antimalware-${varVmSpoke7Name}'
 var varVmSpoke8ExtensionAntimalware = 'extension-antimalware-${varVmSpoke8Name}'
 
-var varVmSpoke2ExtensionAadLogin = 'extension-aadlogin-${varVmSpoke2Name}'
-var varVmSpoke4ExtensionAadLogin = 'extension-aadlogin-${varVmSpoke4Name}'
+var varVmSpoke21ExtensionAadLogin = 'extension-aadlogin-${varVmSpoke21Name}'
+var varVmSpoke22ExtensionAadLogin = 'extension-aadlogin-${varVmSpoke22Name}'
+var varVmSpoke41ExtensionAadLogin = 'extension-aadlogin-${varVmSpoke41Name}'
+var varVmSpoke42ExtensionAadLogin = 'extension-aadlogin-${varVmSpoke42Name}'
 
 var varVmBranch1ExtensionAutomanage = 'extension-automanage-${varVmBranch1Name}'
 var varVmBranch2ExtensionAutomanage = 'extension-automanage-${varVmBranch2Name}'
 var varVmSpoke1ExtensionAutomanage = 'extension-automanage-${varVmSpoke1Name}'
-var varVmSpoke2ExtensionAutomanage = 'extension-automanage-${varVmSpoke2Name}'
+var varVmSpoke21ExtensionAutomanage = 'extension-automanage-${varVmSpoke21Name}'
+var varVmSpoke22ExtensionAutomanage = 'extension-automanage-${varVmSpoke22Name}'
 var varVmSpoke3ExtensionAutomanage = 'extension-automanage-${varVmSpoke3Name}'
-var varVmSpoke4ExtensionAutomanage = 'extension-automanage-${varVmSpoke4Name}'
+var varVmSpoke41ExtensionAutomanage = 'extension-automanage-${varVmSpoke41Name}'
+var varVmSpoke42ExtensionAutomanage = 'extension-automanage-${varVmSpoke42Name}'
 var varVmSpoke5ExtensionAutomanage = 'extension-automanage-${varVmSpoke5Name}'
 var varVmSpoke6ExtensionAutomanage = 'extension-automanage-${varVmSpoke6Name}'
 var varVmSpoke7ExtensionAutomanage = 'extension-automanage-${varVmSpoke7Name}'
 var varVmSpoke8ExtensionAutomanage = 'extension-automanage-${varVmSpoke8Name}'
 
-var varVmSpoke2ExtensionCustomScript = 'extension-customscript-${varVmSpoke2Name}'
-var varVmSpoke4ExtensionCustomScript = 'extension-customscript-${varVmSpoke4Name}'
+var varVmSpoke21ExtensionCustomScript = 'extension-customscript-${varVmSpoke21Name}'
+var varVmSpoke22ExtensionCustomScript = 'extension-customscript-${varVmSpoke22Name}'
+var varVmSpoke41ExtensionCustomScript = 'extension-customscript-${varVmSpoke41Name}'
+var varVmSpoke42ExtensionCustomScript = 'extension-customscript-${varVmSpoke42Name}'
 
 var varVmBranch1Schedule = 'shutdown-computevm-${varVmBranch1Name}'
 var varVmBranch2Schedule = 'shutdown-computevm-${varVmBranch2Name}'
 var varVmSpoke1Schedule = 'shutdown-computevm-${varVmSpoke1Name}'
-var varVmSpoke2Schedule = 'shutdown-computevm-${varVmSpoke2Name}'
+var varVmSpoke21Schedule = 'shutdown-computevm-${varVmSpoke21Name}'
+var varVmSpoke22Schedule = 'shutdown-computevm-${varVmSpoke22Name}'
 var varVmSpoke3Schedule = 'shutdown-computevm-${varVmSpoke3Name}'
-var varVmSpoke4Schedule = 'shutdown-computevm-${varVmSpoke4Name}'
+var varVmSpoke41Schedule = 'shutdown-computevm-${varVmSpoke41Name}'
+var varVmSpoke42Schedule = 'shutdown-computevm-${varVmSpoke42Name}'
 var varVmSpoke5Schedule = 'shutdown-computevm-${varVmSpoke5Name}'
 var varVmSpoke6Schedule = 'shutdown-computevm-${varVmSpoke6Name}'
 var varVmSpoke7Schedule = 'shutdown-computevm-${varVmSpoke7Name}'
 var varVmSpoke8Schedule = 'shutdown-computevm-${varVmSpoke8Name}'
+
+var varSpoke2LoadBalancerName = '${varVnetSpoke2Name}-lb'
+var varSpoke2LoadBalancerFrontEndName = '${varSpoke2LoadBalancerName}-fe'
+var varSpoke2LoadBalancerBackEndName = '${varSpoke2LoadBalancerName}-be'
+var varSpoke2LoadBalancerProbeName = '${varSpoke2LoadBalancerName}-probe'
+var varSpoke2LoadBalancerRuleName = '${varSpoke2LoadBalancerName}-rule'
+var varSpoke2LoadBalancerFrontEndRef = resourceId(
+  'Microsoft.Network/loadBalancers/frontendIPConfigurations',
+  varSpoke2LoadBalancerName,
+  varSpoke2LoadBalancerFrontEndName
+)
+var varSpoke2LoadBalancerBackEndRef = resourceId(
+  'Microsoft.Network/loadBalancers/backendAddressPools',
+  varSpoke2LoadBalancerName,
+  varSpoke2LoadBalancerBackEndName
+)
+var varSpoke2LoadBalancerProbeRef = resourceId(
+  'Microsoft.Network/loadBalancers/probes',
+  varSpoke2LoadBalancerName,
+  varSpoke2LoadBalancerProbeName
+)
+var varSpoke4LoadBalancerName = '${varVnetSpoke4Name}-lb'
+var varSpoke4LoadBalancerFrontEndName = '${varSpoke4LoadBalancerName}-fe'
+var varSpoke4LoadBalancerBackEndName = '${varSpoke4LoadBalancerName}-be'
+var varSpoke4LoadBalancerProbeName = '${varSpoke4LoadBalancerName}-probe'
+var varSpoke4LoadBalancerRuleName = '${varSpoke4LoadBalancerName}-rule'
+var varSpoke4LoadBalancerFrontEndRef = resourceId(
+  'Microsoft.Network/loadBalancers/frontendIPConfigurations',
+  varSpoke4LoadBalancerName,
+  varSpoke4LoadBalancerFrontEndName
+)
+var varSpoke4LoadBalancerBackEndRef = resourceId(
+  'Microsoft.Network/loadBalancers/backendAddressPools',
+  varSpoke4LoadBalancerName,
+  varSpoke4LoadBalancerBackEndName
+)
+var varSpoke4LoadBalancerProbeRef = resourceId(
+  'Microsoft.Network/loadBalancers/probes',
+  varSpoke4LoadBalancerName,
+  varSpoke4LoadBalancerProbeName
+)
 
 // ---------
 // RESOURCES
@@ -245,7 +381,7 @@ resource resVwanHub1 'Microsoft.Network/virtualHubs@2024-01-01' = {
       id: resVwan.id
     }
     addressPrefix: varVwanHub1AddressPrefix
-    virtualRouterAsn: 65515
+    virtualRouterAsn: varVwanAsn
     allowBranchToBranchTraffic: false
     hubRoutingPreference: 'ExpressRoute'
     virtualRouterAutoScaleConfiguration: {
@@ -262,7 +398,7 @@ resource resVwanHub2 'Microsoft.Network/virtualHubs@2024-01-01' = {
       id: resVwan.id
     }
     addressPrefix: varVwanHub2AddressPrefix
-    virtualRouterAsn: 65515
+    virtualRouterAsn: varVwanAsn
     allowBranchToBranchTraffic: false
     hubRoutingPreference: 'ExpressRoute'
     virtualRouterAutoScaleConfiguration: {
@@ -291,7 +427,6 @@ resource resVnetBranch1 'Microsoft.Network/virtualNetworks@2024-01-01' = {
           networkSecurityGroup: {
             id: resNsgRegion1.id
           }
-
         }
       }
       {
@@ -746,7 +881,7 @@ resource resVnetGatewayBranch1 'Microsoft.Network/virtualNetworkGateways@2024-01
     vpnGatewayGeneration: 'Generation1'
     enableBgp: true
     bgpSettings: {
-      asn: 65510
+      asn: varOnPremisesAsn
     }
     ipConfigurations: [
       {
@@ -781,7 +916,7 @@ resource resVnetGatewayBranch2 'Microsoft.Network/virtualNetworkGateways@2024-01
     vpnGatewayGeneration: 'Generation1'
     enableBgp: true
     bgpSettings: {
-      asn: 65510
+      asn: varOnPremisesAsn
     }
     ipConfigurations: [
       {
@@ -860,6 +995,54 @@ resource resHubVirtualNetworkConnectionHub2Spoke4 'Microsoft.Network/virtualHubs
   }
 }
 
+resource resVwanHub1VmSpoke21BgpConnection 'Microsoft.Network/virtualHubs/bgpConnections@2024-01-01' = {
+  name: varVwanHub1VmSpoke21BgpConnectionName
+  parent: resVwanHub1
+  properties: {
+    peerAsn: varSpoke2Asn
+    peerIp: resVmSpoke21Nic.properties.ipConfigurations[0].properties.privateIPAddress
+    hubVirtualNetworkConnection: {
+      id: resHubVirtualNetworkConnectionHub1Spoke2.id
+    }
+  }
+}
+
+resource resVwanHub1VmSpoke22BgpConnection 'Microsoft.Network/virtualHubs/bgpConnections@2024-01-01' = {
+  name: varVwanHub1VmSpoke22BgpConnectionName
+  parent: resVwanHub1
+  properties: {
+    peerAsn: varSpoke2Asn
+    peerIp: resVmSpoke22Nic.properties.ipConfigurations[0].properties.privateIPAddress
+    hubVirtualNetworkConnection: {
+      id: resHubVirtualNetworkConnectionHub1Spoke2.id
+    }
+  }
+}
+
+resource resVwanHub2VmSpoke41BgpConnection 'Microsoft.Network/virtualHubs/bgpConnections@2024-01-01' = {
+  name: varVwanHub2VmSpoke41BgpConnectionName
+  parent: resVwanHub2
+  properties: {
+    peerAsn: varSpoke4Asn
+    peerIp: resVmSpoke41Nic.properties.ipConfigurations[0].properties.privateIPAddress
+    hubVirtualNetworkConnection: {
+      id: resHubVirtualNetworkConnectionHub2Spoke4.id
+    }
+  }
+}
+
+resource resVwanHub2VmSpoke42BgpConnection 'Microsoft.Network/virtualHubs/bgpConnections@2024-01-01' = {
+  name: varVwanHub2VmSpoke42BgpConnectionName
+  parent: resVwanHub2
+  properties: {
+    peerAsn: varSpoke4Asn
+    peerIp: resVmSpoke42Nic.properties.ipConfigurations[0].properties.privateIPAddress
+    hubVirtualNetworkConnection: {
+      id: resHubVirtualNetworkConnectionHub2Spoke4.id
+    }
+  }
+}
+
 resource resVpnSiteBranch1 'Microsoft.Network/vpnSites@2024-01-01' = {
   name: varVpnSiteBranch1Name
   location: varVnetBranch1Region
@@ -869,7 +1052,7 @@ resource resVpnSiteBranch1 'Microsoft.Network/vpnSites@2024-01-01' = {
     }
     ipAddress: resPipBranch1VpnGw.properties.ipAddress
     bgpProperties: {
-      asn: 65510
+      asn: varOnPremisesAsn
       bgpPeeringAddress: resVnetGatewayBranch1.properties.bgpSettings.bgpPeeringAddress
       bgpPeeringAddresses: [
         {
@@ -894,7 +1077,7 @@ resource resVpnSiteBranch2 'Microsoft.Network/vpnSites@2024-01-01' = {
     }
     ipAddress: resPipBranch2VpnGw.properties.ipAddress
     bgpProperties: {
-      asn: 65510
+      asn: varOnPremisesAsn
       bgpPeeringAddress: resVnetGatewayBranch2.properties.bgpSettings.bgpPeeringAddress
       bgpPeeringAddresses: [
         {
@@ -942,7 +1125,7 @@ resource resLocalNetworkGatewayHub1Gw1 'Microsoft.Network/localNetworkGateways@2
   properties: {
     gatewayIpAddress: resVpnGatewayHub1.properties.bgpSettings.bgpPeeringAddresses[0].tunnelIpAddresses[0]
     bgpSettings: {
-      asn: 65515
+      asn: varVwanAsn
       bgpPeeringAddress: resVpnGatewayHub1.properties.bgpSettings.bgpPeeringAddresses[0].defaultBgpIpAddresses[0]
     }
   }
@@ -954,7 +1137,7 @@ resource resLocalNetworkGatewayHub1Gw2 'Microsoft.Network/localNetworkGateways@2
   properties: {
     gatewayIpAddress: resVpnGatewayHub1.properties.bgpSettings.bgpPeeringAddresses[1].tunnelIpAddresses[0]
     bgpSettings: {
-      asn: 65515
+      asn: varVwanAsn
       bgpPeeringAddress: resVpnGatewayHub1.properties.bgpSettings.bgpPeeringAddresses[1].defaultBgpIpAddresses[0]
     }
   }
@@ -966,7 +1149,7 @@ resource resLocalNetworkGatewayHub2Gw1 'Microsoft.Network/localNetworkGateways@2
   properties: {
     gatewayIpAddress: resVpnGatewayHub2.properties.bgpSettings.bgpPeeringAddresses[0].tunnelIpAddresses[0]
     bgpSettings: {
-      asn: 65515
+      asn: varVwanAsn
       bgpPeeringAddress: resVpnGatewayHub2.properties.bgpSettings.bgpPeeringAddresses[0].defaultBgpIpAddresses[0]
     }
   }
@@ -978,7 +1161,7 @@ resource resLocalNetworkGatewayHub2Gw2 'Microsoft.Network/localNetworkGateways@2
   properties: {
     gatewayIpAddress: resVpnGatewayHub2.properties.bgpSettings.bgpPeeringAddresses[1].tunnelIpAddresses[0]
     bgpSettings: {
-      asn: 65515
+      asn: varVwanAsn
       bgpPeeringAddress: resVpnGatewayHub2.properties.bgpSettings.bgpPeeringAddresses[1].defaultBgpIpAddresses[0]
     }
   }
@@ -1077,11 +1260,11 @@ resource resVmBranch1 'Microsoft.Compute/virtualMachines@2024-07-01' = {
   identity: {
     type: 'SystemAssigned'
   }
-  properties:{
-    hardwareProfile:{
+  properties: {
+    hardwareProfile: {
       vmSize: 'Standard_D2s_v5'
     }
-    storageProfile:{
+    storageProfile: {
       imageReference: {
         publisher: 'microsoftwindowsserver'
         offer: 'windowsserver'
@@ -1121,8 +1304,8 @@ resource resVmBranch1 'Microsoft.Compute/virtualMachines@2024-07-01' = {
         }
       ]
     }
-    securityProfile:{
-      uefiSettings:{
+    securityProfile: {
+      uefiSettings: {
         secureBootEnabled: true
         vTpmEnabled: true
       }
@@ -1142,14 +1325,15 @@ resource resVmBranch1Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
   dependsOn: [
     resVnetBranch1
   ]
-    properties: {
+  properties: {
+    enableAcceleratedNetworking: true
     ipConfigurations: [
       {
         name: 'ipconfig1'
         properties: {
           primary: true
           privateIPAddressVersion: 'IPv4'
-          subnet:{
+          subnet: {
             id: varVnetBranch1Subnet1Ref
           }
           publicIPAddress: {
@@ -1208,20 +1392,6 @@ resource resVmBranch1Antmalware 'Microsoft.Compute/virtualMachines/extensions@20
   }
 }
 
-// resource resVmBranch1Aadlogin 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
-//   name: varVmBranch1ExtensionAadLogin
-//   location: varVnetBranch1Region
-//   parent: resVmBranch1
-//   properties: {
-//     publisher: 'Microsoft.Azure.ActiveDirectory'
-//     type: 'AADLoginForWindows'
-//     typeHandlerVersion: '1.0'
-//     autoUpgradeMinorVersion: true
-//     settings: {}
-//     protectedSettings: {}
-//   }
-// }
-
 resource resVmBranch1Automanage 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
   name: varVmBranch1ExtensionAutomanage
   location: varVnetBranch1Region
@@ -1250,7 +1420,7 @@ resource resVmBranch1Schedule 'Microsoft.DevTestLab/schedules@2018-09-15' = {
     notificationSettings: {
       status: 'Disabled'
       timeInMinutes: 30
-       notificationLocale: 'en'
+      notificationLocale: 'en'
     }
   }
 }
@@ -1264,11 +1434,11 @@ resource resVmBranch2 'Microsoft.Compute/virtualMachines@2024-07-01' = {
   identity: {
     type: 'SystemAssigned'
   }
-  properties:{
-    hardwareProfile:{
+  properties: {
+    hardwareProfile: {
       vmSize: 'Standard_D2s_v5'
     }
-    storageProfile:{
+    storageProfile: {
       imageReference: {
         publisher: 'microsoftwindowsserver'
         offer: 'windowsserver'
@@ -1308,8 +1478,8 @@ resource resVmBranch2 'Microsoft.Compute/virtualMachines@2024-07-01' = {
         }
       ]
     }
-    securityProfile:{
-      uefiSettings:{
+    securityProfile: {
+      uefiSettings: {
         secureBootEnabled: true
         vTpmEnabled: true
       }
@@ -1329,14 +1499,15 @@ resource resVmBranch2Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
   dependsOn: [
     resVnetBranch2
   ]
-    properties: {
+  properties: {
+    enableAcceleratedNetworking: true
     ipConfigurations: [
       {
         name: 'ipconfig1'
         properties: {
           primary: true
           privateIPAddressVersion: 'IPv4'
-          subnet:{
+          subnet: {
             id: varVnetBranch2Subnet1Ref
           }
           publicIPAddress: {
@@ -1395,20 +1566,6 @@ resource resVmBranch2Antmalware 'Microsoft.Compute/virtualMachines/extensions@20
   }
 }
 
-// resource resVmBranch2Aadlogin 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
-//   name: varVmBranch2ExtensionAadLogin
-//   location: varVnetBranch2Region
-//   parent: resVmBranch2
-//   properties: {
-//     publisher: 'Microsoft.Azure.ActiveDirectory'
-//     type: 'AADLoginForWindows'
-//     typeHandlerVersion: '1.0'
-//     autoUpgradeMinorVersion: true
-//     settings: {}
-//     protectedSettings: {}
-//   }
-// }
-
 resource resVmBranch2Automanage 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
   name: varVmBranch2ExtensionAutomanage
   location: varVnetBranch2Region
@@ -1437,7 +1594,7 @@ resource resVmBranch2Schedule 'Microsoft.DevTestLab/schedules@2018-09-15' = {
     notificationSettings: {
       status: 'Disabled'
       timeInMinutes: 30
-       notificationLocale: 'en'
+      notificationLocale: 'en'
     }
   }
 }
@@ -1451,11 +1608,11 @@ resource resVmSpoke1 'Microsoft.Compute/virtualMachines@2024-07-01' = {
   identity: {
     type: 'SystemAssigned'
   }
-  properties:{
-    hardwareProfile:{
+  properties: {
+    hardwareProfile: {
       vmSize: 'Standard_D2s_v5'
     }
-    storageProfile:{
+    storageProfile: {
       imageReference: {
         publisher: 'microsoftwindowsserver'
         offer: 'windowsserver'
@@ -1495,8 +1652,8 @@ resource resVmSpoke1 'Microsoft.Compute/virtualMachines@2024-07-01' = {
         }
       ]
     }
-    securityProfile:{
-      uefiSettings:{
+    securityProfile: {
+      uefiSettings: {
         secureBootEnabled: true
         vTpmEnabled: true
       }
@@ -1516,14 +1673,15 @@ resource resVmSpoke1Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
   dependsOn: [
     resVnetSpoke1
   ]
-    properties: {
+  properties: {
+    enableAcceleratedNetworking: true
     ipConfigurations: [
       {
         name: 'ipconfig1'
         properties: {
           primary: true
           privateIPAddressVersion: 'IPv4'
-          subnet:{
+          subnet: {
             id: varVnetSpoke1Subnet1Ref
           }
           publicIPAddress: {
@@ -1582,20 +1740,6 @@ resource resVmSpoke1Antmalware 'Microsoft.Compute/virtualMachines/extensions@202
   }
 }
 
-// resource resVmSpoke1Aadlogin 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
-//   name: varVmSpoke1ExtensionAadLogin
-//   location: varVnetSpoke1Region
-//   parent: resVmSpoke1
-//   properties: {
-//     publisher: 'Microsoft.Azure.ActiveDirectory'
-//     type: 'AADLoginForWindows'
-//     typeHandlerVersion: '1.0'
-//     autoUpgradeMinorVersion: true
-//     settings: {}
-//     protectedSettings: {}
-//   }
-// }
-
 resource resVmSpoke1Automanage 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
   name: varVmSpoke1ExtensionAutomanage
   location: varVnetSpoke1Region
@@ -1624,7 +1768,7 @@ resource resVmSpoke1Schedule 'Microsoft.DevTestLab/schedules@2018-09-15' = {
     notificationSettings: {
       status: 'Disabled'
       timeInMinutes: 30
-       notificationLocale: 'en'
+      notificationLocale: 'en'
     }
   }
 }
@@ -1638,11 +1782,11 @@ resource resVmSpoke3 'Microsoft.Compute/virtualMachines@2024-07-01' = {
   identity: {
     type: 'SystemAssigned'
   }
-  properties:{
-    hardwareProfile:{
+  properties: {
+    hardwareProfile: {
       vmSize: 'Standard_D2s_v5'
     }
-    storageProfile:{
+    storageProfile: {
       imageReference: {
         publisher: 'microsoftwindowsserver'
         offer: 'windowsserver'
@@ -1682,8 +1826,8 @@ resource resVmSpoke3 'Microsoft.Compute/virtualMachines@2024-07-01' = {
         }
       ]
     }
-    securityProfile:{
-      uefiSettings:{
+    securityProfile: {
+      uefiSettings: {
         secureBootEnabled: true
         vTpmEnabled: true
       }
@@ -1703,14 +1847,15 @@ resource resVmSpoke3Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
   dependsOn: [
     resVnetSpoke3
   ]
-    properties: {
+  properties: {
+    enableAcceleratedNetworking: true
     ipConfigurations: [
       {
         name: 'ipconfig1'
         properties: {
           primary: true
           privateIPAddressVersion: 'IPv4'
-          subnet:{
+          subnet: {
             id: varVnetSpoke3Subnet1Ref
           }
           publicIPAddress: {
@@ -1769,20 +1914,6 @@ resource resVmSpoke3Antmalware 'Microsoft.Compute/virtualMachines/extensions@202
   }
 }
 
-// resource resVmSpoke3Aadlogin 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
-//   name: varVmSpoke3ExtensionAadLogin
-//   location: varVnetSpoke3Region
-//   parent: resVmSpoke3
-//   properties: {
-//     publisher: 'Microsoft.Azure.ActiveDirectory'
-//     type: 'AADLoginForWindows'
-//     typeHandlerVersion: '1.0'
-//     autoUpgradeMinorVersion: true
-//     settings: {}
-//     protectedSettings: {}
-//   }
-// }
-
 resource resVmSpoke3Automanage 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
   name: varVmSpoke3ExtensionAutomanage
   location: varVnetSpoke3Region
@@ -1811,7 +1942,7 @@ resource resVmSpoke3Schedule 'Microsoft.DevTestLab/schedules@2018-09-15' = {
     notificationSettings: {
       status: 'Disabled'
       timeInMinutes: 30
-       notificationLocale: 'en'
+      notificationLocale: 'en'
     }
   }
 }
@@ -1825,11 +1956,11 @@ resource resVmSpoke5 'Microsoft.Compute/virtualMachines@2024-07-01' = {
   identity: {
     type: 'SystemAssigned'
   }
-  properties:{
-    hardwareProfile:{
+  properties: {
+    hardwareProfile: {
       vmSize: 'Standard_D2s_v5'
     }
-    storageProfile:{
+    storageProfile: {
       imageReference: {
         publisher: 'microsoftwindowsserver'
         offer: 'windowsserver'
@@ -1869,8 +2000,8 @@ resource resVmSpoke5 'Microsoft.Compute/virtualMachines@2024-07-01' = {
         }
       ]
     }
-    securityProfile:{
-      uefiSettings:{
+    securityProfile: {
+      uefiSettings: {
         secureBootEnabled: true
         vTpmEnabled: true
       }
@@ -1890,14 +2021,15 @@ resource resVmSpoke5Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
   dependsOn: [
     resVnetSpoke5
   ]
-    properties: {
+  properties: {
+    enableAcceleratedNetworking: true
     ipConfigurations: [
       {
         name: 'ipconfig1'
         properties: {
           primary: true
           privateIPAddressVersion: 'IPv4'
-          subnet:{
+          subnet: {
             id: varVnetSpoke5Subnet1Ref
           }
           publicIPAddress: {
@@ -1956,20 +2088,6 @@ resource resVmSpoke5Antmalware 'Microsoft.Compute/virtualMachines/extensions@202
   }
 }
 
-// resource resVmSpoke5Aadlogin 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
-//   name: varVmSpoke5ExtensionAadLogin
-//   location: varVnetSpoke5Region
-//   parent: resVmSpoke5
-//   properties: {
-//     publisher: 'Microsoft.Azure.ActiveDirectory'
-//     type: 'AADLoginForWindows'
-//     typeHandlerVersion: '1.0'
-//     autoUpgradeMinorVersion: true
-//     settings: {}
-//     protectedSettings: {}
-//   }
-// }
-
 resource resVmSpoke5Automanage 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
   name: varVmSpoke5ExtensionAutomanage
   location: varVnetSpoke5Region
@@ -1998,7 +2116,7 @@ resource resVmSpoke5Schedule 'Microsoft.DevTestLab/schedules@2018-09-15' = {
     notificationSettings: {
       status: 'Disabled'
       timeInMinutes: 30
-       notificationLocale: 'en'
+      notificationLocale: 'en'
     }
   }
 }
@@ -2012,11 +2130,11 @@ resource resVmSpoke6 'Microsoft.Compute/virtualMachines@2024-07-01' = {
   identity: {
     type: 'SystemAssigned'
   }
-  properties:{
-    hardwareProfile:{
+  properties: {
+    hardwareProfile: {
       vmSize: 'Standard_D2s_v5'
     }
-    storageProfile:{
+    storageProfile: {
       imageReference: {
         publisher: 'microsoftwindowsserver'
         offer: 'windowsserver'
@@ -2056,8 +2174,8 @@ resource resVmSpoke6 'Microsoft.Compute/virtualMachines@2024-07-01' = {
         }
       ]
     }
-    securityProfile:{
-      uefiSettings:{
+    securityProfile: {
+      uefiSettings: {
         secureBootEnabled: true
         vTpmEnabled: true
       }
@@ -2077,14 +2195,15 @@ resource resVmSpoke6Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
   dependsOn: [
     resVnetSpoke6
   ]
-    properties: {
+  properties: {
+    enableAcceleratedNetworking: true
     ipConfigurations: [
       {
         name: 'ipconfig1'
         properties: {
           primary: true
           privateIPAddressVersion: 'IPv4'
-          subnet:{
+          subnet: {
             id: varVnetSpoke6Subnet1Ref
           }
           publicIPAddress: {
@@ -2143,20 +2262,6 @@ resource resVmSpoke6Antmalware 'Microsoft.Compute/virtualMachines/extensions@202
   }
 }
 
-// resource resVmSpoke6Aadlogin 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
-//   name: varVmSpoke6ExtensionAadLogin
-//   location: varVnetSpoke6Region
-//   parent: resVmSpoke6
-//   properties: {
-//     publisher: 'Microsoft.Azure.ActiveDirectory'
-//     type: 'AADLoginForWindows'
-//     typeHandlerVersion: '1.0'
-//     autoUpgradeMinorVersion: true
-//     settings: {}
-//     protectedSettings: {}
-//   }
-// }
-
 resource resVmSpoke6Automanage 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
   name: varVmSpoke6ExtensionAutomanage
   location: varVnetSpoke6Region
@@ -2185,7 +2290,7 @@ resource resVmSpoke6Schedule 'Microsoft.DevTestLab/schedules@2018-09-15' = {
     notificationSettings: {
       status: 'Disabled'
       timeInMinutes: 30
-       notificationLocale: 'en'
+      notificationLocale: 'en'
     }
   }
 }
@@ -2199,11 +2304,11 @@ resource resVmSpoke7 'Microsoft.Compute/virtualMachines@2024-07-01' = {
   identity: {
     type: 'SystemAssigned'
   }
-  properties:{
-    hardwareProfile:{
+  properties: {
+    hardwareProfile: {
       vmSize: 'Standard_D2s_v5'
     }
-    storageProfile:{
+    storageProfile: {
       imageReference: {
         publisher: 'microsoftwindowsserver'
         offer: 'windowsserver'
@@ -2243,8 +2348,8 @@ resource resVmSpoke7 'Microsoft.Compute/virtualMachines@2024-07-01' = {
         }
       ]
     }
-    securityProfile:{
-      uefiSettings:{
+    securityProfile: {
+      uefiSettings: {
         secureBootEnabled: true
         vTpmEnabled: true
       }
@@ -2264,14 +2369,15 @@ resource resVmSpoke7Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
   dependsOn: [
     resVnetSpoke7
   ]
-    properties: {
+  properties: {
+    enableAcceleratedNetworking: true
     ipConfigurations: [
       {
         name: 'ipconfig1'
         properties: {
           primary: true
           privateIPAddressVersion: 'IPv4'
-          subnet:{
+          subnet: {
             id: varVnetSpoke7Subnet1Ref
           }
           publicIPAddress: {
@@ -2330,20 +2436,6 @@ resource resVmSpoke7Antmalware 'Microsoft.Compute/virtualMachines/extensions@202
   }
 }
 
-// resource resVmSpoke7Aadlogin 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
-//   name: varVmSpoke7ExtensionAadLogin
-//   location: varVnetSpoke7Region
-//   parent: resVmSpoke7
-//   properties: {
-//     publisher: 'Microsoft.Azure.ActiveDirectory'
-//     type: 'AADLoginForWindows'
-//     typeHandlerVersion: '1.0'
-//     autoUpgradeMinorVersion: true
-//     settings: {}
-//     protectedSettings: {}
-//   }
-// }
-
 resource resVmSpoke7Automanage 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
   name: varVmSpoke7ExtensionAutomanage
   location: varVnetSpoke7Region
@@ -2372,7 +2464,7 @@ resource resVmSpoke7Schedule 'Microsoft.DevTestLab/schedules@2018-09-15' = {
     notificationSettings: {
       status: 'Disabled'
       timeInMinutes: 30
-       notificationLocale: 'en'
+      notificationLocale: 'en'
     }
   }
 }
@@ -2386,11 +2478,11 @@ resource resVmSpoke8 'Microsoft.Compute/virtualMachines@2024-07-01' = {
   identity: {
     type: 'SystemAssigned'
   }
-  properties:{
-    hardwareProfile:{
+  properties: {
+    hardwareProfile: {
       vmSize: 'Standard_D2s_v5'
     }
-    storageProfile:{
+    storageProfile: {
       imageReference: {
         publisher: 'microsoftwindowsserver'
         offer: 'windowsserver'
@@ -2430,8 +2522,8 @@ resource resVmSpoke8 'Microsoft.Compute/virtualMachines@2024-07-01' = {
         }
       ]
     }
-    securityProfile:{
-      uefiSettings:{
+    securityProfile: {
+      uefiSettings: {
         secureBootEnabled: true
         vTpmEnabled: true
       }
@@ -2451,14 +2543,15 @@ resource resVmSpoke8Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
   dependsOn: [
     resVnetSpoke8
   ]
-    properties: {
+  properties: {
+    enableAcceleratedNetworking: true
     ipConfigurations: [
       {
         name: 'ipconfig1'
         properties: {
           primary: true
           privateIPAddressVersion: 'IPv4'
-          subnet:{
+          subnet: {
             id: varVnetSpoke8Subnet1Ref
           }
           publicIPAddress: {
@@ -2517,20 +2610,6 @@ resource resVmSpoke8Antmalware 'Microsoft.Compute/virtualMachines/extensions@202
   }
 }
 
-// resource resVmSpoke8Aadlogin 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
-//   name: varVmSpoke8ExtensionAadLogin
-//   location: varVnetSpoke8Region
-//   parent: resVmSpoke8
-//   properties: {
-//     publisher: 'Microsoft.Azure.ActiveDirectory'
-//     type: 'AADLoginForWindows'
-//     typeHandlerVersion: '1.0'
-//     autoUpgradeMinorVersion: true
-//     settings: {}
-//     protectedSettings: {}
-//   }
-// }
-
 resource resVmSpoke8Automanage 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
   name: varVmSpoke8ExtensionAutomanage
   location: varVnetSpoke8Region
@@ -2559,7 +2638,7 @@ resource resVmSpoke8Schedule 'Microsoft.DevTestLab/schedules@2018-09-15' = {
     notificationSettings: {
       status: 'Disabled'
       timeInMinutes: 30
-       notificationLocale: 'en'
+      notificationLocale: 'en'
     }
   }
 }
@@ -2568,8 +2647,8 @@ resource resVmSpoke8Schedule 'Microsoft.DevTestLab/schedules@2018-09-15' = {
 // RESOURCES (LINUX VM)
 // --------------------
 
-resource resVmSpoke2 'Microsoft.Compute/virtualMachines@2024-07-01' = {
-  name: varVmSpoke2Name
+resource resVmSpoke21 'Microsoft.Compute/virtualMachines@2024-07-01' = {
+  name: varVmSpoke21Name
   location: varVnetSpoke2Region
   dependsOn: [
     resVnetSpoke2
@@ -2577,11 +2656,11 @@ resource resVmSpoke2 'Microsoft.Compute/virtualMachines@2024-07-01' = {
   identity: {
     type: 'SystemAssigned'
   }
-  properties:{
-    hardwareProfile:{
+  properties: {
+    hardwareProfile: {
       vmSize: 'Standard_D2s_v5'
     }
-    storageProfile:{
+    storageProfile: {
       imageReference: {
         publisher: 'canonical'
         offer: '0001-com-ubuntu-server-jammy'
@@ -2597,7 +2676,7 @@ resource resVmSpoke2 'Microsoft.Compute/virtualMachines@2024-07-01' = {
       dataDisks: []
     }
     osProfile: {
-      computerName: varVmSpoke2Name
+      computerName: varVmSpoke21Name
       adminUsername: parVmUserName
       adminPassword: parVmPassword
       linuxConfiguration: {
@@ -2613,7 +2692,7 @@ resource resVmSpoke2 'Microsoft.Compute/virtualMachines@2024-07-01' = {
     networkProfile: {
       networkInterfaces: [
         {
-          id: resVmSpoke2Nic.id
+          id: resVmSpoke21Nic.id
           properties: {
             deleteOption: 'Delete'
             primary: true
@@ -2621,8 +2700,8 @@ resource resVmSpoke2 'Microsoft.Compute/virtualMachines@2024-07-01' = {
         }
       ]
     }
-    securityProfile:{
-      uefiSettings:{
+    securityProfile: {
+      uefiSettings: {
         secureBootEnabled: true
         vTpmEnabled: true
       }
@@ -2636,24 +2715,25 @@ resource resVmSpoke2 'Microsoft.Compute/virtualMachines@2024-07-01' = {
   }
 }
 
-resource resVmSpoke2Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
-  name: varVmSpoke2NicName
+resource resVmSpoke21Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
+  name: varVmSpoke21NicName
   location: varVnetSpoke2Region
   dependsOn: [
     resVnetSpoke2
   ]
-    properties: {
+  properties: {
+    enableAcceleratedNetworking: true
     ipConfigurations: [
       {
         name: 'ipconfig1'
         properties: {
           primary: true
           privateIPAddressVersion: 'IPv4'
-          subnet:{
+          subnet: {
             id: varVnetSpoke2Subnet1Ref
           }
           publicIPAddress: {
-            id: resVmSpoke2Pip.id
+            id: resVmSpoke21Pip.id
             properties: {
               deleteOption: 'Delete'
             }
@@ -2664,8 +2744,8 @@ resource resVmSpoke2Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
   }
 }
 
-resource resVmSpoke2Pip 'Microsoft.Network/publicIPAddresses@2024-01-01' = {
-  name: varVmSpoke2PipName
+resource resVmSpoke21Pip 'Microsoft.Network/publicIPAddresses@2024-01-01' = {
+  name: varVmSpoke21PipName
   location: varVnetSpoke2Region
   sku: {
     name: 'Standard'
@@ -2680,10 +2760,10 @@ resource resVmSpoke2Pip 'Microsoft.Network/publicIPAddresses@2024-01-01' = {
   }
 }
 
-resource resVmSpoke2Aadlogin 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
-  name: varVmSpoke2ExtensionAadLogin
+resource resVmSpoke21Aadlogin 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
+  name: varVmSpoke21ExtensionAadLogin
   location: varVnetSpoke2Region
-  parent: resVmSpoke2
+  parent: resVmSpoke21
   properties: {
     publisher: 'Microsoft.Azure.ActiveDirectory'
     type: 'AADSSHLoginForLinux'
@@ -2694,10 +2774,10 @@ resource resVmSpoke2Aadlogin 'Microsoft.Compute/virtualMachines/extensions@2024-
   }
 }
 
-resource resVmSpoke2Automanage 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
-  name: varVmSpoke2ExtensionAutomanage
+resource resVmSpoke21Automanage 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
+  name: varVmSpoke21ExtensionAutomanage
   location: varVnetSpoke2Region
-  parent: resVmSpoke2
+  parent: resVmSpoke21
   properties: {
     publisher: 'Microsoft.GuestConfiguration'
     type: 'ConfigurationforLinux'
@@ -2709,10 +2789,10 @@ resource resVmSpoke2Automanage 'Microsoft.Compute/virtualMachines/extensions@202
   }
 }
 
-resource resVmSpoke2CustomScript 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
-  name: varVmSpoke2ExtensionCustomScript
+resource resVmSpoke21CustomScript 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
+  name: varVmSpoke21ExtensionCustomScript
   location: varVnetSpoke2Region
-  parent: resVmSpoke2
+  parent: resVmSpoke21
   properties: {
     publisher: 'Microsoft.Azure.Extensions'
     type: 'CustomScript'
@@ -2723,16 +2803,16 @@ resource resVmSpoke2CustomScript 'Microsoft.Compute/virtualMachines/extensions@2
       fileUris: [
         'https://raw.githubusercontent.com/simonhutson/Azure-Bicep-Inter-Region-VWAN-NVA-BGP/refs/heads/main/linuxrouterbgpfrr.sh'
       ]
-      commandToExecute: 'sh linuxrouterbgpfrr.sh azureuser 65002 ${resVmSpoke2Nic.properties.ipConfigurations[0].properties.privateIPAddress} 10.2.0.0/16 ${resVwanHub1.properties.virtualRouterIps[0]} ${resVwanHub1.properties.virtualRouterIps[1]}'
+      commandToExecute: 'sh linuxrouterbgpfrr.sh azureuser ${varSpoke2Asn} ${resVmSpoke21Nic.properties.ipConfigurations[0].properties.privateIPAddress} 10.2.0.0/16 ${resVwanHub1.properties.virtualRouterIps[0]} ${resVwanHub1.properties.virtualRouterIps[1]}'
     }
   }
 }
 
-resource resVmSpoke2Schedule 'Microsoft.DevTestLab/schedules@2018-09-15' = {
-  name: varVmSpoke2Schedule
+resource resVmSpoke21Schedule 'Microsoft.DevTestLab/schedules@2018-09-15' = {
+  name: varVmSpoke21Schedule
   location: varVnetSpoke2Region
   properties: {
-    targetResourceId: resVmSpoke2.id
+    targetResourceId: resVmSpoke21.id
     taskType: 'ComputeVmShutdownTask'
     dailyRecurrence: {
       time: '0300'
@@ -2741,22 +2821,25 @@ resource resVmSpoke2Schedule 'Microsoft.DevTestLab/schedules@2018-09-15' = {
     notificationSettings: {
       status: 'Disabled'
       timeInMinutes: 30
-       notificationLocale: 'en'
+      notificationLocale: 'en'
     }
   }
 }
 
-resource resVmSpoke4 'Microsoft.Compute/virtualMachines@2024-07-01' = {
-  name: varVmSpoke4Name
-  location: varVnetSpoke4Region
+resource resVmSpoke22 'Microsoft.Compute/virtualMachines@2024-07-01' = {
+  name: varVmSpoke22Name
+  location: varVnetSpoke2Region
+  dependsOn: [
+    resVnetSpoke2
+  ]
   identity: {
     type: 'SystemAssigned'
   }
-  properties:{
-    hardwareProfile:{
+  properties: {
+    hardwareProfile: {
       vmSize: 'Standard_D2s_v5'
     }
-    storageProfile:{
+    storageProfile: {
       imageReference: {
         publisher: 'canonical'
         offer: '0001-com-ubuntu-server-jammy'
@@ -2772,7 +2855,7 @@ resource resVmSpoke4 'Microsoft.Compute/virtualMachines@2024-07-01' = {
       dataDisks: []
     }
     osProfile: {
-      computerName: varVmSpoke4Name
+      computerName: varVmSpoke22Name
       adminUsername: parVmUserName
       adminPassword: parVmPassword
       linuxConfiguration: {
@@ -2788,7 +2871,7 @@ resource resVmSpoke4 'Microsoft.Compute/virtualMachines@2024-07-01' = {
     networkProfile: {
       networkInterfaces: [
         {
-          id: resVmSpoke4Nic.id
+          id: resVmSpoke22Nic.id
           properties: {
             deleteOption: 'Delete'
             primary: true
@@ -2796,8 +2879,8 @@ resource resVmSpoke4 'Microsoft.Compute/virtualMachines@2024-07-01' = {
         }
       ]
     }
-    securityProfile:{
-      uefiSettings:{
+    securityProfile: {
+      uefiSettings: {
         secureBootEnabled: true
         vTpmEnabled: true
       }
@@ -2811,24 +2894,272 @@ resource resVmSpoke4 'Microsoft.Compute/virtualMachines@2024-07-01' = {
   }
 }
 
-resource resVmSpoke4Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
-  name: varVmSpoke4NicName
+resource resVmSpoke22Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
+  name: varVmSpoke22NicName
+  location: varVnetSpoke2Region
+  dependsOn: [
+    resVnetSpoke2
+  ]
+  properties: {
+    enableAcceleratedNetworking: true
+    ipConfigurations: [
+      {
+        name: 'ipconfig1'
+        properties: {
+          primary: true
+          privateIPAddressVersion: 'IPv4'
+          subnet: {
+            id: varVnetSpoke2Subnet1Ref
+          }
+          publicIPAddress: {
+            id: resVmSpoke22Pip.id
+            properties: {
+              deleteOption: 'Delete'
+            }
+          }
+        }
+      }
+    ]
+  }
+}
+
+resource resVmSpoke22Pip 'Microsoft.Network/publicIPAddresses@2024-01-01' = {
+  name: varVmSpoke22PipName
+  location: varVnetSpoke2Region
+  sku: {
+    name: 'Standard'
+    tier: 'Regional'
+  }
+  properties: {
+    publicIPAddressVersion: 'IPv4'
+    publicIPAllocationMethod: 'Static'
+    ddosSettings: {
+      protectionMode: 'Enabled'
+    }
+  }
+}
+
+resource resVmSpoke22Aadlogin 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
+  name: varVmSpoke22ExtensionAadLogin
+  location: varVnetSpoke2Region
+  parent: resVmSpoke22
+  properties: {
+    publisher: 'Microsoft.Azure.ActiveDirectory'
+    type: 'AADSSHLoginForLinux'
+    typeHandlerVersion: '1.0'
+    autoUpgradeMinorVersion: true
+    settings: {}
+    protectedSettings: {}
+  }
+}
+
+resource resVmSpoke22Automanage 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
+  name: varVmSpoke22ExtensionAutomanage
+  location: varVnetSpoke2Region
+  parent: resVmSpoke22
+  properties: {
+    publisher: 'Microsoft.GuestConfiguration'
+    type: 'ConfigurationforLinux'
+    typeHandlerVersion: '1.0'
+    autoUpgradeMinorVersion: true
+    enableAutomaticUpgrade: true
+    settings: {}
+    protectedSettings: {}
+  }
+}
+
+resource resVmSpoke22CustomScript 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
+  name: varVmSpoke22ExtensionCustomScript
+  location: varVnetSpoke2Region
+  parent: resVmSpoke22
+  properties: {
+    publisher: 'Microsoft.Azure.Extensions'
+    type: 'CustomScript'
+    typeHandlerVersion: '2.1'
+    autoUpgradeMinorVersion: true
+    settings: {}
+    protectedSettings: {
+      fileUris: [
+        'https://raw.githubusercontent.com/simonhutson/Azure-Bicep-Inter-Region-VWAN-NVA-BGP/refs/heads/main/linuxrouterbgpfrr.sh'
+      ]
+      commandToExecute: 'sh linuxrouterbgpfrr.sh azureuser ${varSpoke2Asn} ${resVmSpoke22Nic.properties.ipConfigurations[0].properties.privateIPAddress} 10.2.0.0/16 ${resVwanHub1.properties.virtualRouterIps[0]} ${resVwanHub1.properties.virtualRouterIps[1]}'
+    }
+  }
+}
+
+resource resVmSpoke22Schedule 'Microsoft.DevTestLab/schedules@2018-09-15' = {
+  name: varVmSpoke22Schedule
+  location: varVnetSpoke2Region
+  properties: {
+    targetResourceId: resVmSpoke22.id
+    taskType: 'ComputeVmShutdownTask'
+    dailyRecurrence: {
+      time: '0300'
+    }
+    timeZoneId: 'GMT Standard Time'
+    notificationSettings: {
+      status: 'Disabled'
+      timeInMinutes: 30
+      notificationLocale: 'en'
+    }
+  }
+}
+
+resource resSpoke2LoadBalancer 'Microsoft.Network/loadBalancers@2024-01-01' = {
+  name: varSpoke2LoadBalancerName
+  location: varVnetSpoke2Region
+  sku: {
+    name: 'Standard'
+    tier: 'Regional'
+  }
+  properties: {
+    frontendIPConfigurations: [
+      {
+        name: varSpoke2LoadBalancerFrontEndName
+        properties: {
+          privateIPAllocationMethod: 'Dynamic'
+          privateIPAddressVersion: 'IPv4'
+          subnet: {
+            id: varVnetSpoke2Subnet1Ref
+          }
+        }
+      }
+    ]
+    backendAddressPools: [
+      {
+        name: varSpoke2LoadBalancerBackEndName
+        properties: {
+          loadBalancerBackendAddresses: [
+            {
+              name: varVmSpoke21Name
+              properties: {
+                ipAddress: resVmSpoke21Nic.properties.ipConfigurations[0].properties.privateIPAddress
+              }
+            }
+            {
+              name: varVmSpoke22Name
+              properties: {
+                ipAddress: resVmSpoke22Nic.properties.ipConfigurations[0].properties.privateIPAddress
+              }
+            }
+          ]
+        }
+      }
+    ]
+    probes: [
+      {
+        name: varSpoke2LoadBalancerProbeName
+        properties: {
+          port: 22
+          protocol: 'Tcp'
+        }
+      }
+    ]
+    loadBalancingRules: [
+      {
+        name: varSpoke2LoadBalancerRuleName
+        properties: {
+          frontendPort: 0
+          protocol: 'All'
+          frontendIPConfiguration: {
+            id: varSpoke2LoadBalancerFrontEndRef
+          }
+          backendAddressPool: {
+            id: varSpoke2LoadBalancerBackEndRef
+          }
+          probe: {
+            id: varSpoke2LoadBalancerProbeRef
+          }
+        }
+      }
+    ]
+  }
+}
+
+resource resVmSpoke41 'Microsoft.Compute/virtualMachines@2024-07-01' = {
+  name: varVmSpoke41Name
+  location: varVnetSpoke4Region
+  identity: {
+    type: 'SystemAssigned'
+  }
+  properties: {
+    hardwareProfile: {
+      vmSize: 'Standard_D2s_v5'
+    }
+    storageProfile: {
+      imageReference: {
+        publisher: 'canonical'
+        offer: '0001-com-ubuntu-server-jammy'
+        sku: '22_04-lts-gen2'
+        version: 'latest'
+      }
+      osDisk: {
+        osType: 'Linux'
+        createOption: 'FromImage'
+        caching: 'ReadWrite'
+        deleteOption: 'Delete'
+      }
+      dataDisks: []
+    }
+    osProfile: {
+      computerName: varVmSpoke41Name
+      adminUsername: parVmUserName
+      adminPassword: parVmPassword
+      linuxConfiguration: {
+        provisionVMAgent: true
+        disablePasswordAuthentication: false
+        patchSettings: {
+          patchMode: 'AutomaticByPlatform'
+          assessmentMode: 'AutomaticByPlatform'
+        }
+      }
+      allowExtensionOperations: true
+    }
+    networkProfile: {
+      networkInterfaces: [
+        {
+          id: resVmSpoke41Nic.id
+          properties: {
+            deleteOption: 'Delete'
+            primary: true
+          }
+        }
+      ]
+    }
+    securityProfile: {
+      uefiSettings: {
+        secureBootEnabled: true
+        vTpmEnabled: true
+      }
+      securityType: 'TrustedLaunch'
+    }
+    diagnosticsProfile: {
+      bootDiagnostics: {
+        enabled: true
+      }
+    }
+  }
+}
+
+resource resVmSpoke41Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
+  name: varVmSpoke41NicName
   location: varVnetSpoke4Region
   dependsOn: [
     resVnetSpoke4
   ]
-    properties: {
+  properties: {
+    enableAcceleratedNetworking: true
     ipConfigurations: [
       {
         name: 'ipconfig1'
         properties: {
           primary: true
           privateIPAddressVersion: 'IPv4'
-          subnet:{
+          subnet: {
             id: varVnetSpoke4Subnet1Ref
           }
           publicIPAddress: {
-            id: resVmSpoke4Pip.id
+            id: resVmSpoke41Pip.id
             properties: {
               deleteOption: 'Delete'
             }
@@ -2839,8 +3170,8 @@ resource resVmSpoke4Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
   }
 }
 
-resource resVmSpoke4Pip 'Microsoft.Network/publicIPAddresses@2024-01-01' = {
-  name: varVmSpoke4PipName
+resource resVmSpoke41Pip 'Microsoft.Network/publicIPAddresses@2024-01-01' = {
+  name: varVmSpoke41PipName
   location: varVnetSpoke4Region
   sku: {
     name: 'Standard'
@@ -2855,10 +3186,10 @@ resource resVmSpoke4Pip 'Microsoft.Network/publicIPAddresses@2024-01-01' = {
   }
 }
 
-resource resVmSpoke4Aadlogin 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
-  name: varVmSpoke4ExtensionAadLogin
+resource resVmSpoke41Aadlogin 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
+  name: varVmSpoke41ExtensionAadLogin
   location: varVnetSpoke4Region
-  parent: resVmSpoke4
+  parent: resVmSpoke41
   properties: {
     publisher: 'Microsoft.Azure.ActiveDirectory'
     type: 'AADSSHLoginForLinux'
@@ -2869,10 +3200,10 @@ resource resVmSpoke4Aadlogin 'Microsoft.Compute/virtualMachines/extensions@2024-
   }
 }
 
-resource resVmSpoke4Automanage 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
-  name: varVmSpoke4ExtensionAutomanage
+resource resVmSpoke41Automanage 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
+  name: varVmSpoke41ExtensionAutomanage
   location: varVnetSpoke4Region
-  parent: resVmSpoke4
+  parent: resVmSpoke41
   properties: {
     publisher: 'Microsoft.GuestConfiguration'
     type: 'ConfigurationforLinux'
@@ -2884,10 +3215,10 @@ resource resVmSpoke4Automanage 'Microsoft.Compute/virtualMachines/extensions@202
   }
 }
 
-resource resVmSpoke4CustomScript 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
-  name: varVmSpoke4ExtensionCustomScript
+resource resVmSpoke41CustomScript 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
+  name: varVmSpoke41ExtensionCustomScript
   location: varVnetSpoke4Region
-  parent: resVmSpoke4
+  parent: resVmSpoke41
   properties: {
     publisher: 'Microsoft.Azure.Extensions'
     type: 'CustomScript'
@@ -2898,16 +3229,16 @@ resource resVmSpoke4CustomScript 'Microsoft.Compute/virtualMachines/extensions@2
       fileUris: [
         'https://raw.githubusercontent.com/simonhutson/Azure-Bicep-Inter-Region-VWAN-NVA-BGP/refs/heads/main/linuxrouterbgpfrr.sh'
       ]
-      commandToExecute: 'sh linuxrouterbgpfrr.sh azureuser 65004 ${resVmSpoke4Nic.properties.ipConfigurations[0].properties.privateIPAddress} 10.4.0.0/16 ${resVwanHub2.properties.virtualRouterIps[0]} ${resVwanHub2.properties.virtualRouterIps[1]}'
+      commandToExecute: 'sh linuxrouterbgpfrr.sh azureuser ${varSpoke4Asn} ${resVmSpoke41Nic.properties.ipConfigurations[0].properties.privateIPAddress} 10.4.0.0/16 ${resVwanHub2.properties.virtualRouterIps[0]} ${resVwanHub2.properties.virtualRouterIps[1]}'
     }
   }
 }
 
-resource resVmSpoke4Schedule 'Microsoft.DevTestLab/schedules@2018-09-15' = {
-  name: varVmSpoke4Schedule
+resource resVmSpoke41Schedule 'Microsoft.DevTestLab/schedules@2018-09-15' = {
+  name: varVmSpoke41Schedule
   location: varVnetSpoke4Region
   properties: {
-    targetResourceId: resVmSpoke4.id
+    targetResourceId: resVmSpoke41.id
     taskType: 'ComputeVmShutdownTask'
     dailyRecurrence: {
       time: '0300'
@@ -2916,9 +3247,254 @@ resource resVmSpoke4Schedule 'Microsoft.DevTestLab/schedules@2018-09-15' = {
     notificationSettings: {
       status: 'Disabled'
       timeInMinutes: 30
-       notificationLocale: 'en'
+      notificationLocale: 'en'
     }
   }
 }
 
+resource resVmSpoke42 'Microsoft.Compute/virtualMachines@2024-07-01' = {
+  name: varVmSpoke42Name
+  location: varVnetSpoke4Region
+  identity: {
+    type: 'SystemAssigned'
+  }
+  properties: {
+    hardwareProfile: {
+      vmSize: 'Standard_D2s_v5'
+    }
+    storageProfile: {
+      imageReference: {
+        publisher: 'canonical'
+        offer: '0001-com-ubuntu-server-jammy'
+        sku: '22_04-lts-gen2'
+        version: 'latest'
+      }
+      osDisk: {
+        osType: 'Linux'
+        createOption: 'FromImage'
+        caching: 'ReadWrite'
+        deleteOption: 'Delete'
+      }
+      dataDisks: []
+    }
+    osProfile: {
+      computerName: varVmSpoke42Name
+      adminUsername: parVmUserName
+      adminPassword: parVmPassword
+      linuxConfiguration: {
+        provisionVMAgent: true
+        disablePasswordAuthentication: false
+        patchSettings: {
+          patchMode: 'AutomaticByPlatform'
+          assessmentMode: 'AutomaticByPlatform'
+        }
+      }
+      allowExtensionOperations: true
+    }
+    networkProfile: {
+      networkInterfaces: [
+        {
+          id: resVmSpoke42Nic.id
+          properties: {
+            deleteOption: 'Delete'
+            primary: true
+          }
+        }
+      ]
+    }
+    securityProfile: {
+      uefiSettings: {
+        secureBootEnabled: true
+        vTpmEnabled: true
+      }
+      securityType: 'TrustedLaunch'
+    }
+    diagnosticsProfile: {
+      bootDiagnostics: {
+        enabled: true
+      }
+    }
+  }
+}
 
+resource resVmSpoke42Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
+  name: varVmSpoke42NicName
+  location: varVnetSpoke4Region
+  dependsOn: [
+    resVnetSpoke4
+  ]
+  properties: {
+    enableAcceleratedNetworking: true
+    ipConfigurations: [
+      {
+        name: 'ipconfig1'
+        properties: {
+          primary: true
+          privateIPAddressVersion: 'IPv4'
+          subnet: {
+            id: varVnetSpoke4Subnet1Ref
+          }
+          publicIPAddress: {
+            id: resVmSpoke42Pip.id
+            properties: {
+              deleteOption: 'Delete'
+            }
+          }
+        }
+      }
+    ]
+  }
+}
+
+resource resVmSpoke42Pip 'Microsoft.Network/publicIPAddresses@2024-01-01' = {
+  name: varVmSpoke42PipName
+  location: varVnetSpoke4Region
+  sku: {
+    name: 'Standard'
+    tier: 'Regional'
+  }
+  properties: {
+    publicIPAddressVersion: 'IPv4'
+    publicIPAllocationMethod: 'Static'
+    ddosSettings: {
+      protectionMode: 'Enabled'
+    }
+  }
+}
+
+resource resVmSpoke42Aadlogin 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
+  name: varVmSpoke42ExtensionAadLogin
+  location: varVnetSpoke4Region
+  parent: resVmSpoke42
+  properties: {
+    publisher: 'Microsoft.Azure.ActiveDirectory'
+    type: 'AADSSHLoginForLinux'
+    typeHandlerVersion: '1.0'
+    autoUpgradeMinorVersion: true
+    settings: {}
+    protectedSettings: {}
+  }
+}
+
+resource resVmSpoke42Automanage 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
+  name: varVmSpoke42ExtensionAutomanage
+  location: varVnetSpoke4Region
+  parent: resVmSpoke42
+  properties: {
+    publisher: 'Microsoft.GuestConfiguration'
+    type: 'ConfigurationforLinux'
+    typeHandlerVersion: '1.0'
+    autoUpgradeMinorVersion: true
+    enableAutomaticUpgrade: true
+    settings: {}
+    protectedSettings: {}
+  }
+}
+
+resource resVmSpoke42CustomScript 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
+  name: varVmSpoke42ExtensionCustomScript
+  location: varVnetSpoke4Region
+  parent: resVmSpoke42
+  properties: {
+    publisher: 'Microsoft.Azure.Extensions'
+    type: 'CustomScript'
+    typeHandlerVersion: '2.1'
+    autoUpgradeMinorVersion: true
+    settings: {}
+    protectedSettings: {
+      fileUris: [
+        'https://raw.githubusercontent.com/simonhutson/Azure-Bicep-Inter-Region-VWAN-NVA-BGP/refs/heads/main/linuxrouterbgpfrr.sh'
+      ]
+      commandToExecute: 'sh linuxrouterbgpfrr.sh azureuser ${varSpoke4Asn} ${resVmSpoke42Nic.properties.ipConfigurations[0].properties.privateIPAddress} 10.4.0.0/16 ${resVwanHub2.properties.virtualRouterIps[0]} ${resVwanHub2.properties.virtualRouterIps[1]}'
+    }
+  }
+}
+
+resource resVmSpoke42Schedule 'Microsoft.DevTestLab/schedules@2018-09-15' = {
+  name: varVmSpoke42Schedule
+  location: varVnetSpoke4Region
+  properties: {
+    targetResourceId: resVmSpoke42.id
+    taskType: 'ComputeVmShutdownTask'
+    dailyRecurrence: {
+      time: '0300'
+    }
+    timeZoneId: 'GMT Standard Time'
+    notificationSettings: {
+      status: 'Disabled'
+      timeInMinutes: 30
+      notificationLocale: 'en'
+    }
+  }
+}
+
+resource resSpoke4LoadBalancer 'Microsoft.Network/loadBalancers@2024-01-01' = {
+  name: varSpoke4LoadBalancerName
+  location: varVnetSpoke4Region
+  sku: {
+    name: 'Standard'
+    tier: 'Regional'
+  }
+  properties: {
+    frontendIPConfigurations: [
+      {
+        name: varSpoke4LoadBalancerFrontEndName
+        properties: {
+          privateIPAllocationMethod: 'Dynamic'
+          privateIPAddressVersion: 'IPv4'
+          subnet: {
+            id: varVnetSpoke4Subnet1Ref
+          }
+        }
+      }
+    ]
+    backendAddressPools: [
+      {
+        name: varSpoke4LoadBalancerBackEndName
+        properties: {
+          loadBalancerBackendAddresses: [
+            {
+              name: varVmSpoke41Name
+              properties: {
+                ipAddress: resVmSpoke41Nic.properties.ipConfigurations[0].properties.privateIPAddress
+              }
+            }
+            {
+              name: varVmSpoke42Name
+              properties: {
+                ipAddress: resVmSpoke42Nic.properties.ipConfigurations[0].properties.privateIPAddress
+              }
+            }
+          ]
+        }
+      }
+    ]
+    probes: [
+      {
+        name: varSpoke4LoadBalancerProbeName
+        properties: {
+          port: 22
+          protocol: 'Tcp'
+        }
+      }
+    ]
+    loadBalancingRules: [
+      {
+        name: varSpoke4LoadBalancerRuleName
+        properties: {
+          frontendPort: 0
+          protocol: 'All'
+          frontendIPConfiguration: {
+            id: varSpoke4LoadBalancerFrontEndRef
+          }
+          backendAddressPool: {
+            id: varSpoke4LoadBalancerBackEndRef
+          }
+          probe: {
+            id: varSpoke4LoadBalancerProbeRef
+          }
+        }
+      }
+    ]
+  }
+}
