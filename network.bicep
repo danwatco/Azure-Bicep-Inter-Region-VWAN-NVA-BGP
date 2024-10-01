@@ -20,7 +20,7 @@ param parVwanHub2Region string = 'swedencentral'
 @secure()
 param parVmPassword string
 
-@description('The password for VM admins.')
+@description('The user name for VM admins.')
 param parVmUserName string = 'azureuser'
 
 
@@ -164,6 +164,28 @@ var varVmSpoke5Name = 'vm-${varVnetSpoke5Name}'
 var varVmSpoke6Name = 'vm-${varVnetSpoke6Name}'
 var varVmSpoke7Name = 'vm-${varVnetSpoke7Name}'
 var varVmSpoke8Name = 'vm-${varVnetSpoke8Name}'
+
+var varVmBranch1NicName = '${varVmBranch1Name}-nic'
+var varVmBranch2NicName = '${varVmBranch2Name}-nic'
+var varVmSpoke1NicName = '${varVmSpoke1Name}-nic'
+var varVmSpoke2NicName = '${varVmSpoke2Name}-nic'
+var varVmSpoke3NicName = '${varVmSpoke3Name}-nic'
+var varVmSpoke4NicName = '${varVmSpoke4Name}-nic'
+var varVmSpoke5NicName = '${varVmSpoke5Name}-nic'
+var varVmSpoke6NicName = '${varVmSpoke6Name}-nic'
+var varVmSpoke7NicName = '${varVmSpoke7Name}-nic'
+var varVmSpoke8NicName = '${varVmSpoke8Name}-nic'
+
+var varVmBranch1PipName = '${varVmBranch1Name}-pip'
+var varVmBranch2PipName = '${varVmBranch2Name}-pip'
+var varVmSpoke1PipName = '${varVmSpoke1Name}-pip'
+var varVmSpoke2PipName = '${varVmSpoke2Name}-pip'
+var varVmSpoke3PipName = '${varVmSpoke3Name}-pip'
+var varVmSpoke4PipName = '${varVmSpoke4Name}-pip'
+var varVmSpoke5PipName = '${varVmSpoke5Name}-pip'
+var varVmSpoke6PipName = '${varVmSpoke6Name}-pip'
+var varVmSpoke7PipName = '${varVmSpoke7Name}-pip'
+var varVmSpoke8PipName = '${varVmSpoke8Name}-pip'
 
 var varVmBranch1ExtensionAntimalware = 'extension-antimalware-${varVmBranch1Name}'
 var varVmBranch2ExtensionAntimalware = 'extension-antimalware-${varVmBranch2Name}'
@@ -1070,6 +1092,7 @@ resource resVmBranch1 'Microsoft.Compute/virtualMachines@2024-07-01' = {
         osType: 'Windows'
         createOption: 'FromImage'
         caching: 'ReadWrite'
+        deleteOption: 'Delete'
       }
       dataDisks: []
     }
@@ -1088,33 +1111,12 @@ resource resVmBranch1 'Microsoft.Compute/virtualMachines@2024-07-01' = {
       allowExtensionOperations: true
     }
     networkProfile: {
-      networkApiVersion: '2024-01-01'
-      networkInterfaceConfigurations: [
+      networkInterfaces: [
         {
-          name: '${varVmBranch1Name}-nic'
+          id: resVmBranch1Nic.id
           properties: {
-            primary: true
-            ipConfigurations: [
-              {
-                name: '${varVmBranch1Name}-nic-ipconfig1'
-                properties: {
-                  primary: true
-                  privateIPAddressVersion: 'IPv4'
-                  subnet:{
-                    id: varVnetBranch1Subnet1Ref
-                  }
-                  publicIPAddressConfiguration: {
-                    name: '${varVmBranch1Name}-nic-ipconfig1-pip'
-                    properties: {
-                      deleteOption: 'Delete'
-                      publicIPAddressVersion: 'IPv4'
-                      publicIPAllocationMethod: 'Static'
-                    }
-                  }
-                }
-              }
-            ]
             deleteOption: 'Delete'
+            primary: true
           }
         }
       ]
@@ -1130,6 +1132,50 @@ resource resVmBranch1 'Microsoft.Compute/virtualMachines@2024-07-01' = {
       bootDiagnostics: {
         enabled: true
       }
+    }
+  }
+}
+
+resource resVmBranch1Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
+  name: varVmBranch1NicName
+  location: varVnetBranch1Region
+  dependsOn: [
+    resVnetBranch1
+  ]
+    properties: {
+    ipConfigurations: [
+      {
+        name: 'ipconfig1'
+        properties: {
+          primary: true
+          privateIPAddressVersion: 'IPv4'
+          subnet:{
+            id: varVnetBranch1Subnet1Ref
+          }
+          publicIPAddress: {
+            id: resVmBranch1Pip.id
+            properties: {
+              deleteOption: 'Delete'
+            }
+          }
+        }
+      }
+    ]
+  }
+}
+
+resource resVmBranch1Pip 'Microsoft.Network/publicIPAddresses@2024-01-01' = {
+  name: varVmBranch1PipName
+  location: varVnetBranch1Region
+  sku: {
+    name: 'Standard'
+    tier: 'Regional'
+  }
+  properties: {
+    publicIPAddressVersion: 'IPv4'
+    publicIPAllocationMethod: 'Static'
+    ddosSettings: {
+      protectionMode: 'Enabled'
     }
   }
 }
@@ -1233,6 +1279,7 @@ resource resVmBranch2 'Microsoft.Compute/virtualMachines@2024-07-01' = {
         osType: 'Windows'
         createOption: 'FromImage'
         caching: 'ReadWrite'
+        deleteOption: 'Delete'
       }
       dataDisks: []
     }
@@ -1251,33 +1298,12 @@ resource resVmBranch2 'Microsoft.Compute/virtualMachines@2024-07-01' = {
       allowExtensionOperations: true
     }
     networkProfile: {
-      networkApiVersion: '2024-01-01'
-      networkInterfaceConfigurations: [
+      networkInterfaces: [
         {
-          name: '${varVmBranch2Name}-nic'
+          id: resVmBranch2Nic.id
           properties: {
-            primary: true
-            ipConfigurations: [
-              {
-                name: '${varVmBranch2Name}-nic-ipconfig1'
-                properties: {
-                  primary: true
-                  privateIPAddressVersion: 'IPv4'
-                  subnet:{
-                    id: varVnetBranch2Subnet1Ref
-                  }
-                  publicIPAddressConfiguration: {
-                    name: '${varVmBranch2Name}-nic-ipconfig1-pip'
-                    properties: {
-                      deleteOption: 'Delete'
-                      publicIPAddressVersion: 'IPv4'
-                      publicIPAllocationMethod: 'Static'
-                    }
-                  }
-                }
-              }
-            ]
             deleteOption: 'Delete'
+            primary: true
           }
         }
       ]
@@ -1293,6 +1319,50 @@ resource resVmBranch2 'Microsoft.Compute/virtualMachines@2024-07-01' = {
       bootDiagnostics: {
         enabled: true
       }
+    }
+  }
+}
+
+resource resVmBranch2Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
+  name: varVmBranch2NicName
+  location: varVnetBranch2Region
+  dependsOn: [
+    resVnetBranch2
+  ]
+    properties: {
+    ipConfigurations: [
+      {
+        name: 'ipconfig1'
+        properties: {
+          primary: true
+          privateIPAddressVersion: 'IPv4'
+          subnet:{
+            id: varVnetBranch2Subnet1Ref
+          }
+          publicIPAddress: {
+            id: resVmBranch2Pip.id
+            properties: {
+              deleteOption: 'Delete'
+            }
+          }
+        }
+      }
+    ]
+  }
+}
+
+resource resVmBranch2Pip 'Microsoft.Network/publicIPAddresses@2024-01-01' = {
+  name: varVmBranch2PipName
+  location: varVnetBranch2Region
+  sku: {
+    name: 'Standard'
+    tier: 'Regional'
+  }
+  properties: {
+    publicIPAddressVersion: 'IPv4'
+    publicIPAllocationMethod: 'Static'
+    ddosSettings: {
+      protectionMode: 'Enabled'
     }
   }
 }
@@ -1396,6 +1466,7 @@ resource resVmSpoke1 'Microsoft.Compute/virtualMachines@2024-07-01' = {
         osType: 'Windows'
         createOption: 'FromImage'
         caching: 'ReadWrite'
+        deleteOption: 'Delete'
       }
       dataDisks: []
     }
@@ -1414,33 +1485,12 @@ resource resVmSpoke1 'Microsoft.Compute/virtualMachines@2024-07-01' = {
       allowExtensionOperations: true
     }
     networkProfile: {
-      networkApiVersion: '2024-01-01'
-      networkInterfaceConfigurations: [
+      networkInterfaces: [
         {
-          name: '${varVmSpoke1Name}-nic'
+          id: resVmSpoke1Nic.id
           properties: {
-            primary: true
-            ipConfigurations: [
-              {
-                name: '${varVmSpoke1Name}-nic-ipconfig1'
-                properties: {
-                  primary: true
-                  privateIPAddressVersion: 'IPv4'
-                  subnet:{
-                    id: varVnetSpoke1Subnet1Ref
-                  }
-                  publicIPAddressConfiguration: {
-                    name: '${varVmSpoke1Name}-nic-ipconfig1-pip'
-                    properties: {
-                      deleteOption: 'Delete'
-                      publicIPAddressVersion: 'IPv4'
-                      publicIPAllocationMethod: 'Static'
-                    }
-                  }
-                }
-              }
-            ]
             deleteOption: 'Delete'
+            primary: true
           }
         }
       ]
@@ -1456,6 +1506,50 @@ resource resVmSpoke1 'Microsoft.Compute/virtualMachines@2024-07-01' = {
       bootDiagnostics: {
         enabled: true
       }
+    }
+  }
+}
+
+resource resVmSpoke1Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
+  name: varVmSpoke1NicName
+  location: varVnetSpoke1Region
+  dependsOn: [
+    resVnetSpoke1
+  ]
+    properties: {
+    ipConfigurations: [
+      {
+        name: 'ipconfig1'
+        properties: {
+          primary: true
+          privateIPAddressVersion: 'IPv4'
+          subnet:{
+            id: varVnetSpoke1Subnet1Ref
+          }
+          publicIPAddress: {
+            id: resVmSpoke1Pip.id
+            properties: {
+              deleteOption: 'Delete'
+            }
+          }
+        }
+      }
+    ]
+  }
+}
+
+resource resVmSpoke1Pip 'Microsoft.Network/publicIPAddresses@2024-01-01' = {
+  name: varVmSpoke1PipName
+  location: varVnetSpoke1Region
+  sku: {
+    name: 'Standard'
+    tier: 'Regional'
+  }
+  properties: {
+    publicIPAddressVersion: 'IPv4'
+    publicIPAllocationMethod: 'Static'
+    ddosSettings: {
+      protectionMode: 'Enabled'
     }
   }
 }
@@ -1559,6 +1653,7 @@ resource resVmSpoke3 'Microsoft.Compute/virtualMachines@2024-07-01' = {
         osType: 'Windows'
         createOption: 'FromImage'
         caching: 'ReadWrite'
+        deleteOption: 'Delete'
       }
       dataDisks: []
     }
@@ -1577,33 +1672,12 @@ resource resVmSpoke3 'Microsoft.Compute/virtualMachines@2024-07-01' = {
       allowExtensionOperations: true
     }
     networkProfile: {
-      networkApiVersion: '2024-01-01'
-      networkInterfaceConfigurations: [
+      networkInterfaces: [
         {
-          name: '${varVmSpoke3Name}-nic'
+          id: resVmSpoke3Nic.id
           properties: {
-            primary: true
-            ipConfigurations: [
-              {
-                name: '${varVmSpoke3Name}-nic-ipconfig1'
-                properties: {
-                  primary: true
-                  privateIPAddressVersion: 'IPv4'
-                  subnet:{
-                    id: varVnetSpoke3Subnet1Ref
-                  }
-                  publicIPAddressConfiguration: {
-                    name: '${varVmSpoke3Name}-nic-ipconfig1-pip'
-                    properties: {
-                      deleteOption: 'Delete'
-                      publicIPAddressVersion: 'IPv4'
-                      publicIPAllocationMethod: 'Static'
-                    }
-                  }
-                }
-              }
-            ]
             deleteOption: 'Delete'
+            primary: true
           }
         }
       ]
@@ -1619,6 +1693,50 @@ resource resVmSpoke3 'Microsoft.Compute/virtualMachines@2024-07-01' = {
       bootDiagnostics: {
         enabled: true
       }
+    }
+  }
+}
+
+resource resVmSpoke3Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
+  name: varVmSpoke3NicName
+  location: varVnetSpoke3Region
+  dependsOn: [
+    resVnetSpoke3
+  ]
+    properties: {
+    ipConfigurations: [
+      {
+        name: 'ipconfig1'
+        properties: {
+          primary: true
+          privateIPAddressVersion: 'IPv4'
+          subnet:{
+            id: varVnetSpoke3Subnet1Ref
+          }
+          publicIPAddress: {
+            id: resVmSpoke3Pip.id
+            properties: {
+              deleteOption: 'Delete'
+            }
+          }
+        }
+      }
+    ]
+  }
+}
+
+resource resVmSpoke3Pip 'Microsoft.Network/publicIPAddresses@2024-01-01' = {
+  name: varVmSpoke3PipName
+  location: varVnetSpoke3Region
+  sku: {
+    name: 'Standard'
+    tier: 'Regional'
+  }
+  properties: {
+    publicIPAddressVersion: 'IPv4'
+    publicIPAllocationMethod: 'Static'
+    ddosSettings: {
+      protectionMode: 'Enabled'
     }
   }
 }
@@ -1722,6 +1840,7 @@ resource resVmSpoke5 'Microsoft.Compute/virtualMachines@2024-07-01' = {
         osType: 'Windows'
         createOption: 'FromImage'
         caching: 'ReadWrite'
+        deleteOption: 'Delete'
       }
       dataDisks: []
     }
@@ -1740,33 +1859,12 @@ resource resVmSpoke5 'Microsoft.Compute/virtualMachines@2024-07-01' = {
       allowExtensionOperations: true
     }
     networkProfile: {
-      networkApiVersion: '2024-01-01'
-      networkInterfaceConfigurations: [
+      networkInterfaces: [
         {
-          name: '${varVmSpoke5Name}-nic'
+          id: resVmSpoke5Nic.id
           properties: {
-            primary: true
-            ipConfigurations: [
-              {
-                name: '${varVmSpoke5Name}-nic-ipconfig1'
-                properties: {
-                  primary: true
-                  privateIPAddressVersion: 'IPv4'
-                  subnet:{
-                    id: varVnetSpoke5Subnet1Ref
-                  }
-                  publicIPAddressConfiguration: {
-                    name: '${varVmSpoke5Name}-nic-ipconfig1-pip'
-                    properties: {
-                      deleteOption: 'Delete'
-                      publicIPAddressVersion: 'IPv4'
-                      publicIPAllocationMethod: 'Static'
-                    }
-                  }
-                }
-              }
-            ]
             deleteOption: 'Delete'
+            primary: true
           }
         }
       ]
@@ -1782,6 +1880,50 @@ resource resVmSpoke5 'Microsoft.Compute/virtualMachines@2024-07-01' = {
       bootDiagnostics: {
         enabled: true
       }
+    }
+  }
+}
+
+resource resVmSpoke5Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
+  name: varVmSpoke5NicName
+  location: varVnetSpoke5Region
+  dependsOn: [
+    resVnetSpoke5
+  ]
+    properties: {
+    ipConfigurations: [
+      {
+        name: 'ipconfig1'
+        properties: {
+          primary: true
+          privateIPAddressVersion: 'IPv4'
+          subnet:{
+            id: varVnetSpoke5Subnet1Ref
+          }
+          publicIPAddress: {
+            id: resVmSpoke5Pip.id
+            properties: {
+              deleteOption: 'Delete'
+            }
+          }
+        }
+      }
+    ]
+  }
+}
+
+resource resVmSpoke5Pip 'Microsoft.Network/publicIPAddresses@2024-01-01' = {
+  name: varVmSpoke5PipName
+  location: varVnetSpoke5Region
+  sku: {
+    name: 'Standard'
+    tier: 'Regional'
+  }
+  properties: {
+    publicIPAddressVersion: 'IPv4'
+    publicIPAllocationMethod: 'Static'
+    ddosSettings: {
+      protectionMode: 'Enabled'
     }
   }
 }
@@ -1885,6 +2027,7 @@ resource resVmSpoke6 'Microsoft.Compute/virtualMachines@2024-07-01' = {
         osType: 'Windows'
         createOption: 'FromImage'
         caching: 'ReadWrite'
+        deleteOption: 'Delete'
       }
       dataDisks: []
     }
@@ -1903,33 +2046,12 @@ resource resVmSpoke6 'Microsoft.Compute/virtualMachines@2024-07-01' = {
       allowExtensionOperations: true
     }
     networkProfile: {
-      networkApiVersion: '2024-01-01'
-      networkInterfaceConfigurations: [
+      networkInterfaces: [
         {
-          name: '${varVmSpoke6Name}-nic'
+          id: resVmSpoke6Nic.id
           properties: {
-            primary: true
-            ipConfigurations: [
-              {
-                name: '${varVmSpoke6Name}-nic-ipconfig1'
-                properties: {
-                  primary: true
-                  privateIPAddressVersion: 'IPv4'
-                  subnet:{
-                    id: varVnetSpoke6Subnet1Ref
-                  }
-                  publicIPAddressConfiguration: {
-                    name: '${varVmSpoke6Name}-nic-ipconfig1-pip'
-                    properties: {
-                      deleteOption: 'Delete'
-                      publicIPAddressVersion: 'IPv4'
-                      publicIPAllocationMethod: 'Static'
-                    }
-                  }
-                }
-              }
-            ]
             deleteOption: 'Delete'
+            primary: true
           }
         }
       ]
@@ -1945,6 +2067,50 @@ resource resVmSpoke6 'Microsoft.Compute/virtualMachines@2024-07-01' = {
       bootDiagnostics: {
         enabled: true
       }
+    }
+  }
+}
+
+resource resVmSpoke6Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
+  name: varVmSpoke6NicName
+  location: varVnetSpoke6Region
+  dependsOn: [
+    resVnetSpoke6
+  ]
+    properties: {
+    ipConfigurations: [
+      {
+        name: 'ipconfig1'
+        properties: {
+          primary: true
+          privateIPAddressVersion: 'IPv4'
+          subnet:{
+            id: varVnetSpoke6Subnet1Ref
+          }
+          publicIPAddress: {
+            id: resVmSpoke6Pip.id
+            properties: {
+              deleteOption: 'Delete'
+            }
+          }
+        }
+      }
+    ]
+  }
+}
+
+resource resVmSpoke6Pip 'Microsoft.Network/publicIPAddresses@2024-01-01' = {
+  name: varVmSpoke6PipName
+  location: varVnetSpoke2Region
+  sku: {
+    name: 'Standard'
+    tier: 'Regional'
+  }
+  properties: {
+    publicIPAddressVersion: 'IPv4'
+    publicIPAllocationMethod: 'Static'
+    ddosSettings: {
+      protectionMode: 'Enabled'
     }
   }
 }
@@ -2048,6 +2214,7 @@ resource resVmSpoke7 'Microsoft.Compute/virtualMachines@2024-07-01' = {
         osType: 'Windows'
         createOption: 'FromImage'
         caching: 'ReadWrite'
+        deleteOption: 'Delete'
       }
       dataDisks: []
     }
@@ -2066,33 +2233,12 @@ resource resVmSpoke7 'Microsoft.Compute/virtualMachines@2024-07-01' = {
       allowExtensionOperations: true
     }
     networkProfile: {
-      networkApiVersion: '2024-01-01'
-      networkInterfaceConfigurations: [
+      networkInterfaces: [
         {
-          name: '${varVmSpoke7Name}-nic'
+          id: resVmSpoke7Nic.id
           properties: {
-            primary: true
-            ipConfigurations: [
-              {
-                name: '${varVmSpoke7Name}-nic-ipconfig1'
-                properties: {
-                  primary: true
-                  privateIPAddressVersion: 'IPv4'
-                  subnet:{
-                    id: varVnetSpoke7Subnet1Ref
-                  }
-                  publicIPAddressConfiguration: {
-                    name: '${varVmSpoke7Name}-nic-ipconfig1-pip'
-                    properties: {
-                      deleteOption: 'Delete'
-                      publicIPAddressVersion: 'IPv4'
-                      publicIPAllocationMethod: 'Static'
-                    }
-                  }
-                }
-              }
-            ]
             deleteOption: 'Delete'
+            primary: true
           }
         }
       ]
@@ -2108,6 +2254,50 @@ resource resVmSpoke7 'Microsoft.Compute/virtualMachines@2024-07-01' = {
       bootDiagnostics: {
         enabled: true
       }
+    }
+  }
+}
+
+resource resVmSpoke7Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
+  name: varVmSpoke7NicName
+  location: varVnetSpoke7Region
+  dependsOn: [
+    resVnetSpoke7
+  ]
+    properties: {
+    ipConfigurations: [
+      {
+        name: 'ipconfig1'
+        properties: {
+          primary: true
+          privateIPAddressVersion: 'IPv4'
+          subnet:{
+            id: varVnetSpoke7Subnet1Ref
+          }
+          publicIPAddress: {
+            id: resVmSpoke7Pip.id
+            properties: {
+              deleteOption: 'Delete'
+            }
+          }
+        }
+      }
+    ]
+  }
+}
+
+resource resVmSpoke7Pip 'Microsoft.Network/publicIPAddresses@2024-01-01' = {
+  name: varVmSpoke7PipName
+  location: varVnetSpoke7Region
+  sku: {
+    name: 'Standard'
+    tier: 'Regional'
+  }
+  properties: {
+    publicIPAddressVersion: 'IPv4'
+    publicIPAllocationMethod: 'Static'
+    ddosSettings: {
+      protectionMode: 'Enabled'
     }
   }
 }
@@ -2211,6 +2401,7 @@ resource resVmSpoke8 'Microsoft.Compute/virtualMachines@2024-07-01' = {
         osType: 'Windows'
         createOption: 'FromImage'
         caching: 'ReadWrite'
+        deleteOption: 'Delete'
       }
       dataDisks: []
     }
@@ -2229,33 +2420,12 @@ resource resVmSpoke8 'Microsoft.Compute/virtualMachines@2024-07-01' = {
       allowExtensionOperations: true
     }
     networkProfile: {
-      networkApiVersion: '2024-01-01'
-      networkInterfaceConfigurations: [
+      networkInterfaces: [
         {
-          name: '${varVmSpoke8Name}-nic'
+          id: resVmSpoke8Nic.id
           properties: {
-            primary: true
-            ipConfigurations: [
-              {
-                name: '${varVmSpoke8Name}-nic-ipconfig1'
-                properties: {
-                  primary: true
-                  privateIPAddressVersion: 'IPv4'
-                  subnet:{
-                    id: varVnetSpoke8Subnet1Ref
-                  }
-                  publicIPAddressConfiguration: {
-                    name: '${varVmSpoke8Name}-nic-ipconfig1-pip'
-                    properties: {
-                      deleteOption: 'Delete'
-                      publicIPAddressVersion: 'IPv4'
-                      publicIPAllocationMethod: 'Static'
-                    }
-                  }
-                }
-              }
-            ]
             deleteOption: 'Delete'
+            primary: true
           }
         }
       ]
@@ -2271,6 +2441,50 @@ resource resVmSpoke8 'Microsoft.Compute/virtualMachines@2024-07-01' = {
       bootDiagnostics: {
         enabled: true
       }
+    }
+  }
+}
+
+resource resVmSpoke8Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
+  name: varVmSpoke8NicName
+  location: varVnetSpoke8Region
+  dependsOn: [
+    resVnetSpoke8
+  ]
+    properties: {
+    ipConfigurations: [
+      {
+        name: 'ipconfig1'
+        properties: {
+          primary: true
+          privateIPAddressVersion: 'IPv4'
+          subnet:{
+            id: varVnetSpoke8Subnet1Ref
+          }
+          publicIPAddress: {
+            id: resVmSpoke8Pip.id
+            properties: {
+              deleteOption: 'Delete'
+            }
+          }
+        }
+      }
+    ]
+  }
+}
+
+resource resVmSpoke8Pip 'Microsoft.Network/publicIPAddresses@2024-01-01' = {
+  name: varVmSpoke8PipName
+  location: varVnetSpoke8Region
+  sku: {
+    name: 'Standard'
+    tier: 'Regional'
+  }
+  properties: {
+    publicIPAddressVersion: 'IPv4'
+    publicIPAllocationMethod: 'Static'
+    ddosSettings: {
+      protectionMode: 'Enabled'
     }
   }
 }
@@ -2397,33 +2611,12 @@ resource resVmSpoke2 'Microsoft.Compute/virtualMachines@2024-07-01' = {
       allowExtensionOperations: true
     }
     networkProfile: {
-      networkApiVersion: '2024-01-01'
-      networkInterfaceConfigurations: [
+      networkInterfaces: [
         {
-          name: '${varVmSpoke2Name}-nic'
+          id: resVmSpoke2Nic.id
           properties: {
-            primary: true
-            ipConfigurations: [
-              {
-                name: '${varVmSpoke2Name}-nic-ipconfig1'
-                properties: {
-                  primary: true
-                  privateIPAddressVersion: 'IPv4'
-                  subnet:{
-                    id: varVnetSpoke2Subnet1Ref
-                  }
-                  publicIPAddressConfiguration: {
-                    name: '${varVmSpoke2Name}-nic-ipconfig1-pip'
-                    properties: {
-                      deleteOption: 'Delete'
-                      publicIPAddressVersion: 'IPv4'
-                      publicIPAllocationMethod: 'Static'
-                    }
-                  }
-                }
-              }
-            ]
             deleteOption: 'Delete'
+            primary: true
           }
         }
       ]
@@ -2439,6 +2632,50 @@ resource resVmSpoke2 'Microsoft.Compute/virtualMachines@2024-07-01' = {
       bootDiagnostics: {
         enabled: true
       }
+    }
+  }
+}
+
+resource resVmSpoke2Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
+  name: varVmSpoke2NicName
+  location: varVnetSpoke2Region
+  dependsOn: [
+    resVnetSpoke2
+  ]
+    properties: {
+    ipConfigurations: [
+      {
+        name: 'ipconfig1'
+        properties: {
+          primary: true
+          privateIPAddressVersion: 'IPv4'
+          subnet:{
+            id: varVnetSpoke2Subnet1Ref
+          }
+          publicIPAddress: {
+            id: resVmSpoke2Pip.id
+            properties: {
+              deleteOption: 'Delete'
+            }
+          }
+        }
+      }
+    ]
+  }
+}
+
+resource resVmSpoke2Pip 'Microsoft.Network/publicIPAddresses@2024-01-01' = {
+  name: varVmSpoke2PipName
+  location: varVnetSpoke2Region
+  sku: {
+    name: 'Standard'
+    tier: 'Regional'
+  }
+  properties: {
+    publicIPAddressVersion: 'IPv4'
+    publicIPAllocationMethod: 'Static'
+    ddosSettings: {
+      protectionMode: 'Enabled'
     }
   }
 }
@@ -2469,6 +2706,25 @@ resource resVmSpoke2Automanage 'Microsoft.Compute/virtualMachines/extensions@202
     enableAutomaticUpgrade: true
     settings: {}
     protectedSettings: {}
+  }
+}
+
+resource resVmSpoke2CustomScript 'Microsoft.Compute/virtualMachines/extensions@2024-07-01' = {
+  name: varVmSpoke2ExtensionCustomScript
+  location: varVnetSpoke2Region
+  parent: resVmSpoke2
+  properties: {
+    publisher: 'Microsoft.Azure.Extensions'
+    type: 'CustomScript'
+    typeHandlerVersion: '2.1'
+    autoUpgradeMinorVersion: true
+    settings: {}
+    protectedSettings: {
+      fileUris: [
+        'https://raw.githubusercontent.com/simonhutson/Azure-Bicep-Inter-Region-VWAN-NVA-BGP/refs/heads/main/linuxrouterbgpfrr.sh'
+      ]
+      commandToExecute: 'sh linuxrouterbgpfrr.sh azureuser 65002 ${resVmSpoke2Nic.properties.ipConfigurations[0].properties.privateIPAddress} 10.2.0.0/16 ${resVwanHub1.properties.virtualRouterIps[0]} ${resVwanHub1.properties.virtualRouterIps[1]}'
+    }
   }
 }
 
@@ -2532,7 +2788,7 @@ resource resVmSpoke4 'Microsoft.Compute/virtualMachines@2024-07-01' = {
     networkProfile: {
       networkInterfaces: [
         {
-          id: resSpoke4Nic.id
+          id: resVmSpoke4Nic.id
           properties: {
             deleteOption: 'Delete'
             primary: true
@@ -2555,8 +2811,8 @@ resource resVmSpoke4 'Microsoft.Compute/virtualMachines@2024-07-01' = {
   }
 }
 
-resource resSpoke4Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
-  name: '${varVmSpoke4Name}-nic'
+resource resVmSpoke4Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
+  name: varVmSpoke4NicName
   location: varVnetSpoke4Region
   dependsOn: [
     resVnetSpoke4
@@ -2564,7 +2820,7 @@ resource resSpoke4Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
     properties: {
     ipConfigurations: [
       {
-        name: '${varVmSpoke4Name}-nic-ipconfig1'
+        name: 'ipconfig1'
         properties: {
           primary: true
           privateIPAddressVersion: 'IPv4'
@@ -2572,7 +2828,10 @@ resource resSpoke4Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
             id: varVnetSpoke4Subnet1Ref
           }
           publicIPAddress: {
-            id: resSpoke4Pip.id
+            id: resVmSpoke4Pip.id
+            properties: {
+              deleteOption: 'Delete'
+            }
           }
         }
       }
@@ -2580,13 +2839,19 @@ resource resSpoke4Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
   }
 }
 
-resource resSpoke4Pip 'Microsoft.Network/publicIPAddresses@2024-01-01' = {
-  name: '${varVmSpoke4Name}-nic-ipconfig1-pip'
+resource resVmSpoke4Pip 'Microsoft.Network/publicIPAddresses@2024-01-01' = {
+  name: varVmSpoke4PipName
   location: varVnetSpoke4Region
+  sku: {
+    name: 'Standard'
+    tier: 'Regional'
+  }
   properties: {
-    deleteOption: 'Delete'
     publicIPAddressVersion: 'IPv4'
     publicIPAllocationMethod: 'Static'
+    ddosSettings: {
+      protectionMode: 'Enabled'
+    }
   }
 }
 
@@ -2633,7 +2898,7 @@ resource resVmSpoke4CustomScript 'Microsoft.Compute/virtualMachines/extensions@2
       fileUris: [
         'https://raw.githubusercontent.com/simonhutson/Azure-Bicep-Inter-Region-VWAN-NVA-BGP/refs/heads/main/linuxrouterbgpfrr.sh'
       ]
-      commandToExecute: 'sh linuxrouterbgpfrr.sh ${parVmUserName} 65002 ${resSpoke4Nic.properties.ipConfigurations[0].properties.privateIPAddress} 10.4.0.0/16 ${resVwanHub1.properties.virtualRouterIps[0]} ${resVwanHub1.properties.virtualRouterIps[1]}'
+      commandToExecute: 'sh linuxrouterbgpfrr.sh azureuser 65004 ${resVmSpoke4Nic.properties.ipConfigurations[0].properties.privateIPAddress} 10.4.0.0/16 ${resVwanHub2.properties.virtualRouterIps[0]} ${resVwanHub2.properties.virtualRouterIps[1]}'
     }
   }
 }

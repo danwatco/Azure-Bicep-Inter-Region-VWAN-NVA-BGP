@@ -11,7 +11,7 @@ param currentDate string = utcNow('u')
 @description('The Resource Group name.')
 param parRgName string = 'VWAN-NVA-BGP'
 
-@description('The Resource Group name.')
+@description('The password for VM admins.')
 @secure()
 param parVmPassword string
 
