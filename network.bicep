@@ -1333,6 +1333,7 @@ resource resVmBranch1Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
         properties: {
           primary: true
           privateIPAddressVersion: 'IPv4'
+          privateIPAllocationMethod: 'Dynamic'
           subnet: {
             id: varVnetBranch1Subnet1Ref
           }
@@ -1507,6 +1508,7 @@ resource resVmBranch2Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
         properties: {
           primary: true
           privateIPAddressVersion: 'IPv4'
+          privateIPAllocationMethod: 'Dynamic'
           subnet: {
             id: varVnetBranch2Subnet1Ref
           }
@@ -1681,6 +1683,7 @@ resource resVmSpoke1Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
         properties: {
           primary: true
           privateIPAddressVersion: 'IPv4'
+          privateIPAllocationMethod: 'Dynamic'
           subnet: {
             id: varVnetSpoke1Subnet1Ref
           }
@@ -1855,6 +1858,7 @@ resource resVmSpoke3Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
         properties: {
           primary: true
           privateIPAddressVersion: 'IPv4'
+          privateIPAllocationMethod: 'Dynamic'
           subnet: {
             id: varVnetSpoke3Subnet1Ref
           }
@@ -2029,6 +2033,7 @@ resource resVmSpoke5Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
         properties: {
           primary: true
           privateIPAddressVersion: 'IPv4'
+          privateIPAllocationMethod: 'Dynamic'
           subnet: {
             id: varVnetSpoke5Subnet1Ref
           }
@@ -2203,6 +2208,7 @@ resource resVmSpoke6Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
         properties: {
           primary: true
           privateIPAddressVersion: 'IPv4'
+          privateIPAllocationMethod: 'Dynamic'
           subnet: {
             id: varVnetSpoke6Subnet1Ref
           }
@@ -2377,6 +2383,7 @@ resource resVmSpoke7Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
         properties: {
           primary: true
           privateIPAddressVersion: 'IPv4'
+          privateIPAllocationMethod: 'Dynamic'
           subnet: {
             id: varVnetSpoke7Subnet1Ref
           }
@@ -2551,6 +2558,7 @@ resource resVmSpoke8Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
         properties: {
           primary: true
           privateIPAddressVersion: 'IPv4'
+          privateIPAllocationMethod: 'Dynamic'
           subnet: {
             id: varVnetSpoke8Subnet1Ref
           }
@@ -2720,6 +2728,7 @@ resource resVmSpoke21Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
   location: varVnetSpoke2Region
   dependsOn: [
     resVnetSpoke2
+    resSpoke2LoadBalancer
   ]
   properties: {
     enableAcceleratedNetworking: true
@@ -2729,9 +2738,15 @@ resource resVmSpoke21Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
         properties: {
           primary: true
           privateIPAddressVersion: 'IPv4'
+          privateIPAllocationMethod: 'Dynamic'
           subnet: {
             id: varVnetSpoke2Subnet1Ref
           }
+          loadBalancerBackendAddressPools: [
+            {
+              id: varSpoke2LoadBalancerBackEndRef
+            }
+          ]
           publicIPAddress: {
             id: resVmSpoke21Pip.id
             properties: {
@@ -2899,6 +2914,7 @@ resource resVmSpoke22Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
   location: varVnetSpoke2Region
   dependsOn: [
     resVnetSpoke2
+    resSpoke2LoadBalancer
   ]
   properties: {
     enableAcceleratedNetworking: true
@@ -2908,9 +2924,15 @@ resource resVmSpoke22Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
         properties: {
           primary: true
           privateIPAddressVersion: 'IPv4'
+          privateIPAllocationMethod: 'Dynamic'
           subnet: {
             id: varVnetSpoke2Subnet1Ref
           }
+          loadBalancerBackendAddressPools: [
+            {
+              id: varSpoke2LoadBalancerBackEndRef
+            }
+          ]
           publicIPAddress: {
             id: resVmSpoke22Pip.id
             properties: {
@@ -3028,23 +3050,6 @@ resource resSpoke2LoadBalancer 'Microsoft.Network/loadBalancers@2024-01-01' = {
     backendAddressPools: [
       {
         name: varSpoke2LoadBalancerBackEndName
-        id: resVnetSpoke2.id
-        properties: {
-          loadBalancerBackendAddresses: [
-            {
-              name: varVmSpoke21Name
-              properties: {
-                ipAddress: resVmSpoke21Nic.properties.ipConfigurations[0].properties.privateIPAddress
-              }
-            }
-            {
-              name: varVmSpoke22Name
-              properties: {
-                ipAddress: resVmSpoke22Nic.properties.ipConfigurations[0].properties.privateIPAddress
-              }
-            }
-          ]
-        }
       }
     ]
     probes: [
@@ -3147,6 +3152,7 @@ resource resVmSpoke41Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
   location: varVnetSpoke4Region
   dependsOn: [
     resVnetSpoke4
+    resSpoke4LoadBalancer
   ]
   properties: {
     enableAcceleratedNetworking: true
@@ -3156,9 +3162,15 @@ resource resVmSpoke41Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
         properties: {
           primary: true
           privateIPAddressVersion: 'IPv4'
+          privateIPAllocationMethod: 'Dynamic'
           subnet: {
             id: varVnetSpoke4Subnet1Ref
           }
+          loadBalancerBackendAddressPools: [
+            {
+              id: varSpoke4LoadBalancerBackEndRef
+            }
+          ]
           publicIPAddress: {
             id: resVmSpoke41Pip.id
             properties: {
@@ -3323,6 +3335,7 @@ resource resVmSpoke42Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
   location: varVnetSpoke4Region
   dependsOn: [
     resVnetSpoke4
+    resSpoke4LoadBalancer
   ]
   properties: {
     enableAcceleratedNetworking: true
@@ -3332,9 +3345,15 @@ resource resVmSpoke42Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
         properties: {
           primary: true
           privateIPAddressVersion: 'IPv4'
+          privateIPAllocationMethod: 'Dynamic'
           subnet: {
             id: varVnetSpoke4Subnet1Ref
           }
+          loadBalancerBackendAddressPools: [
+            {
+              id: varSpoke4LoadBalancerBackEndRef
+            }
+          ]
           publicIPAddress: {
             id: resVmSpoke42Pip.id
             properties: {
@@ -3452,25 +3471,6 @@ resource resSpoke4LoadBalancer 'Microsoft.Network/loadBalancers@2024-01-01' = {
     backendAddressPools: [
       {
         name: varSpoke4LoadBalancerBackEndName
-        properties: {
-          virtualNetwork: {
-            id: resVnetSpoke4.id
-          }
-          loadBalancerBackendAddresses: [
-            {
-              name: varVmSpoke41Name
-              properties: {
-                ipAddress: resVmSpoke41Nic.properties.ipConfigurations[0].properties.privateIPAddress
-              }
-            }
-            {
-              name: varVmSpoke42Name
-              properties: {
-                ipAddress: resVmSpoke42Nic.properties.ipConfigurations[0].properties.privateIPAddress
-              }
-            }
-          ]
-        }
       }
     ]
     probes: [
