@@ -312,9 +312,9 @@ var varSpoke4LoadBalancerProbeRef = resourceId(
   varSpoke4LoadBalancerProbeName
 )
 
-// ---------
-// RESOURCES
-// ---------
+// --------------------
+// RESOURCES Networking
+// --------------------
 
 resource resVwan 'Microsoft.Network/virtualWans@2024-01-01' = {
   name: varVwanName
@@ -806,9 +806,6 @@ resource resHubVirtualNetworkConnectionHub1Spoke1 'Microsoft.Network/virtualHubs
 resource resHubVirtualNetworkConnectionHub1Spoke2 'Microsoft.Network/virtualHubs/hubVirtualNetworkConnections@2024-01-01' = {
   name: varHubVirtualNetworkConnectionHub1Spoke2Name
   parent: resVwanHub1
-  dependsOn: [
-    resHubVirtualNetworkConnectionHub1Spoke1
-  ]
   properties: {
     remoteVirtualNetwork: {
       id: resVnetSpoke2.id
@@ -829,66 +826,9 @@ resource resHubVirtualNetworkConnectionHub2Spoke3 'Microsoft.Network/virtualHubs
 resource resHubVirtualNetworkConnectionHub2Spoke4 'Microsoft.Network/virtualHubs/hubVirtualNetworkConnections@2024-01-01' = {
   name: varHubVirtualNetworkConnectionHub2Spoke4Name
   parent: resVwanHub2
-  dependsOn: [
-    resHubVirtualNetworkConnectionHub2Spoke3
-  ]
   properties: {
     remoteVirtualNetwork: {
       id: resVnetSpoke4.id
-    }
-  }
-}
-
-resource resVwanHub1VmSpoke21BgpConnection 'Microsoft.Network/virtualHubs/bgpConnections@2024-01-01' = {
-  name: varVwanHub1VmSpoke21BgpConnectionName
-  parent: resVwanHub1
-  properties: {
-    peerAsn: varSpoke2Asn
-    peerIp: resVmSpoke21Nic.properties.ipConfigurations[0].properties.privateIPAddress
-    hubVirtualNetworkConnection: {
-      id: resHubVirtualNetworkConnectionHub1Spoke2.id
-    }
-  }
-}
-
-resource resVwanHub1VmSpoke22BgpConnection 'Microsoft.Network/virtualHubs/bgpConnections@2024-01-01' = {
-  name: varVwanHub1VmSpoke22BgpConnectionName
-  parent: resVwanHub1
-  dependsOn: [
-    resVwanHub1VmSpoke21BgpConnection
-  ]
-  properties: {
-    peerAsn: varSpoke2Asn
-    peerIp: resVmSpoke22Nic.properties.ipConfigurations[0].properties.privateIPAddress
-    hubVirtualNetworkConnection: {
-      id: resHubVirtualNetworkConnectionHub1Spoke2.id
-    }
-  }
-}
-
-resource resVwanHub2VmSpoke41BgpConnection 'Microsoft.Network/virtualHubs/bgpConnections@2024-01-01' = {
-  name: varVwanHub2VmSpoke41BgpConnectionName
-  parent: resVwanHub2
-  properties: {
-    peerAsn: varSpoke4Asn
-    peerIp: resVmSpoke41Nic.properties.ipConfigurations[0].properties.privateIPAddress
-    hubVirtualNetworkConnection: {
-      id: resHubVirtualNetworkConnectionHub2Spoke4.id
-    }
-  }
-}
-
-resource resVwanHub2VmSpoke42BgpConnection 'Microsoft.Network/virtualHubs/bgpConnections@2024-01-01' = {
-  name: varVwanHub2VmSpoke42BgpConnectionName
-  parent: resVwanHub2
-  dependsOn: [
-    resVwanHub2VmSpoke41BgpConnection
-  ]
-  properties: {
-    peerAsn: varSpoke4Asn
-    peerIp: resVmSpoke42Nic.properties.ipConfigurations[0].properties.privateIPAddress
-    hubVirtualNetworkConnection: {
-      id: resHubVirtualNetworkConnectionHub2Spoke4.id
     }
   }
 }
@@ -916,7 +856,7 @@ resource resPipBranch2VpnGw 'Microsoft.Network/publicIPAddresses@2024-01-01' = {
     publicIPAllocationMethod: 'Static'
   }
 }
-/* 
+ 
 resource resVnetGatewayBranch1 'Microsoft.Network/virtualNetworkGateways@2024-01-01' = {
   name: varVnetGatewayBranch1Name
   location: varVnetBranch1Region
@@ -1210,7 +1150,93 @@ resource resConnectionBranch2Hub2Gw2 'Microsoft.Network/connections@2024-01-01' 
     sharedKey: 'abc123'
   }
 }
- */
+
+// ------------------------------------------------------
+// RESOURCES Wait 5 mins for vWAN Hubs to finish creating
+// ------------------------------------------------------
+
+@description('azPowerShellVersion - https://mcr.microsoft.com/v2/azuredeploymentscripts-powershell/tags/list')
+resource resWait 'Microsoft.Resources/deploymentScripts@2023-08-01' = {
+  name: 'wait'
+  location: resourceGroup().location
+  dependsOn: [
+    resVwanHub1
+    resVwanHub2
+  ]
+  kind:'AzurePowerShell'
+  properties: {
+    azPowerShellVersion: 'az12.3'
+    retentionInterval: 'PT1H'
+    cleanupPreference: 'Always'
+    scriptContent: 'start-sleep -Seconds 300'
+  }
+}
+
+// -----------------------------------------------
+// RESOURCES Wait for vWAN Hubs to finish creating
+// -----------------------------------------------
+
+resource resVwanHub1VmSpoke21BgpConnection 'Microsoft.Network/virtualHubs/bgpConnections@2024-01-01' = {
+  name: varVwanHub1VmSpoke21BgpConnectionName
+  parent: resVwanHub1
+  dependsOn: [
+    resWait
+  ]
+  properties: {
+    peerAsn: varSpoke2Asn
+    peerIp: resVmSpoke21Nic.properties.ipConfigurations[0].properties.privateIPAddress
+    hubVirtualNetworkConnection: {
+      id: resHubVirtualNetworkConnectionHub1Spoke2.id
+    }
+  }
+}
+
+resource resVwanHub1VmSpoke22BgpConnection 'Microsoft.Network/virtualHubs/bgpConnections@2024-01-01' = {
+  name: varVwanHub1VmSpoke22BgpConnectionName
+  parent: resVwanHub1
+  dependsOn: [
+    resWait
+    resVwanHub1VmSpoke21BgpConnection
+  ]
+  properties: {
+    peerAsn: varSpoke2Asn
+    peerIp: resVmSpoke22Nic.properties.ipConfigurations[0].properties.privateIPAddress
+    hubVirtualNetworkConnection: {
+      id: resHubVirtualNetworkConnectionHub1Spoke2.id
+    }
+  }
+}
+
+resource resVwanHub2VmSpoke41BgpConnection 'Microsoft.Network/virtualHubs/bgpConnections@2024-01-01' = {
+  name: varVwanHub2VmSpoke41BgpConnectionName
+  parent: resVwanHub2
+  dependsOn: [
+    resWait
+  ]
+  properties: {
+    peerAsn: varSpoke4Asn
+    peerIp: resVmSpoke41Nic.properties.ipConfigurations[0].properties.privateIPAddress
+    hubVirtualNetworkConnection: {
+      id: resHubVirtualNetworkConnectionHub2Spoke4.id
+    }
+  }
+}
+
+resource resVwanHub2VmSpoke42BgpConnection 'Microsoft.Network/virtualHubs/bgpConnections@2024-01-01' = {
+  name: varVwanHub2VmSpoke42BgpConnectionName
+  parent: resVwanHub2
+  dependsOn: [
+    resWait
+    resVwanHub2VmSpoke41BgpConnection
+  ]
+  properties: {
+    peerAsn: varSpoke4Asn
+    peerIp: resVmSpoke42Nic.properties.ipConfigurations[0].properties.privateIPAddress
+    hubVirtualNetworkConnection: {
+      id: resHubVirtualNetworkConnectionHub2Spoke4.id
+    }
+  }
+}
 
 // -----------------------------------------
 // RESOURCES (FRR VMs in Spokes 2 & 4)
@@ -1220,6 +1246,7 @@ resource resVmSpoke21 'Microsoft.Compute/virtualMachines@2024-07-01' = {
   name: varVmSpoke21Name
   location: varVnetSpoke2Region
   dependsOn: [
+    resWait
     resVnetSpoke2
   ]
   identity: {
@@ -1406,6 +1433,7 @@ resource resVmSpoke22 'Microsoft.Compute/virtualMachines@2024-07-01' = {
   name: varVmSpoke22Name
   location: varVnetSpoke2Region
   dependsOn: [
+    resWait
     resVnetSpoke2
   ]
   identity: {
@@ -1649,6 +1677,10 @@ resource resSpoke2LoadBalancer 'Microsoft.Network/loadBalancers@2024-01-01' = {
 resource resVmSpoke41 'Microsoft.Compute/virtualMachines@2024-07-01' = {
   name: varVmSpoke41Name
   location: varVnetSpoke4Region
+  dependsOn: [
+    resWait
+    resVnetSpoke4    
+  ]
   identity: {
     type: 'SystemAssigned'
   }
@@ -1832,6 +1864,10 @@ resource resVmSpoke41Schedule 'Microsoft.DevTestLab/schedules@2018-09-15' = {
 resource resVmSpoke42 'Microsoft.Compute/virtualMachines@2024-07-01' = {
   name: varVmSpoke42Name
   location: varVnetSpoke4Region
+  dependsOn: [
+    resWait
+    resVnetSpoke4    
+  ]
   identity: {
     type: 'SystemAssigned'
   }
