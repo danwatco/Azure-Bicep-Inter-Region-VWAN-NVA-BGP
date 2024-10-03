@@ -28,8 +28,8 @@ module network 'network.bicep' = {
   scope: resResourceGroup
   name: 'network-${uniqueString(currentDate)}'
   params: {
-    parVwanHub1Region: 'uksouth'
-    parVwanHub2Region: 'swedencentral'
+    parRegion1: 'uksouth'
+    parRegion2: 'swedencentral'
     parVmPassword: parVmPassword
     parVmUserName: 'azureuser'
   }
