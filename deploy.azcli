@@ -2,6 +2,7 @@ az login
 # az account list --output table
 
 az deployment sub create `
+  --name vwan-nva-bgp- `
   --location uksouth `
   --template-file ./main.bicep `
   --parameters ./parameters.json `

@@ -22,7 +22,7 @@ param parVwanRegion string = resourceGroup().location
   'switzerlandnorth'
   'spaincentral'
 ])
-param parRegion1 string = 'uksouth'
+param parVwanHub1Region string = 'uksouth'
 
 @description('The virtual WAN hub 2 region.')
 @allowed([
@@ -38,14 +38,14 @@ param parRegion1 string = 'uksouth'
   'switzerlandnorth'
   'spaincentral'
 ])
-param parRegion2 string = 'swedencentral'
+param parVwanHub2Region string = 'swedencentral'
+
+@description('The user name for VM admins.')
+param parVmUserName string = 'azureuser'
 
 @description('The password for VM admins.')
 @secure()
 param parVmPassword string
-
-@description('The user name for VM admins.')
-param parVmUserName string = 'azureuser'
 
 // ---------
 // VARIABLES
@@ -70,128 +70,68 @@ var varVwanHub2VmSpoke41BgpConnectionName = '${varVmSpoke41Name}-bgp-conn'
 var varVwanHub2VmSpoke42BgpConnectionName = '${varVmSpoke42Name}-bgp-conn'
 
 var varVnetBranch1Name = 'branch1'
-var varVnetBranch1Region = parRegion1
+var varVnetBranch1Region = parVwanHub1Region
 var varVnetBranch1AddressPrefix = '10.100.0.0/16'
 var varVnetBranch1Subnet1Name = 'main'
 var varVnetBranch1Subnet1AddressPrefix = '10.100.0.0/24'
-var varVnetBranch1Subnet1Ref = resourceId(
-  'Microsoft.Network/virtualNetworks/subnets',
-  varVnetBranch1Name,
-  varVnetBranch1Subnet1Name
-)
 var varVnetBranch1Subnet2Name = 'GatewaySubnet'
 var varVnetBranch1Subnet2AddressPrefix = '10.100.100.0/26'
-var varVnetBranch1Subnet2Ref = resourceId(
-  'Microsoft.Network/virtualNetworks/subnets',
-  varVnetBranch1Name,
-  varVnetBranch1Subnet2Name
-)
 
 var varVnetBranch2Name = 'branch2'
-var varVnetBranch2Region = parRegion2
+var varVnetBranch2Region = parVwanHub2Region
 var varVnetBranch2AddressPrefix = '10.200.0.0/16'
 var varVnetBranch2Subnet1Name = 'main'
 var varVnetBranch2Subnet1AddressPrefix = '10.200.0.0/24'
-var varVnetBranch2Subnet1Ref = resourceId(
-  'Microsoft.Network/virtualNetworks/subnets',
-  varVnetBranch2Name,
-  varVnetBranch2Subnet1Name
-)
 var varVnetBranch2Subnet2Name = 'GatewaySubnet'
 var varVnetBranch2Subnet2AddressPrefix = '10.200.100.0/26'
-var varVnetBranch2Subnet2Ref = resourceId(
-  'Microsoft.Network/virtualNetworks/subnets',
-  varVnetBranch2Name,
-  varVnetBranch2Subnet2Name
-)
 
 var varVnetSpoke1Name = 'spoke1'
-var varVnetSpoke1Region = parRegion1
+var varVnetSpoke1Region = parVwanHub1Region
 var varVnetSpoke1AddressPrefix = '10.1.0.0/24'
 var varVnetSpoke1Subnet1Name = 'main'
 var varVnetSpoke1Subnet1AddressPrefix = '10.1.0.0/27'
-var varVnetSpoke1Subnet1Ref = resourceId(
-  'Microsoft.Network/virtualNetworks/subnets',
-  varVnetSpoke1Name,
-  varVnetSpoke1Subnet1Name
-)
 
 var varVnetSpoke2Name = 'spoke2'
-var varVnetSpoke2Region = parRegion1
+var varVnetSpoke2Region = parVwanHub1Region
 var varVnetSpoke2AddressPrefix = '10.2.0.0/24'
 var varVnetSpoke2Subnet1Name = 'main'
 var varVnetSpoke2Subnet1AddressPrefix = '10.2.0.0/27'
-var varVnetSpoke2Subnet1Ref = resourceId(
-  'Microsoft.Network/virtualNetworks/subnets',
-  varVnetSpoke2Name,
-  varVnetSpoke2Subnet1Name
-)
 
 var varVnetSpoke3Name = 'spoke3'
-var varVnetSpoke3Region = parRegion2
+var varVnetSpoke3Region = parVwanHub2Region
 var varVnetSpoke3AddressPrefix = '10.3.0.0/24'
 var varVnetSpoke3Subnet1Name = 'main'
 var varVnetSpoke3Subnet1AddressPrefix = '10.3.0.0/27'
-var varVnetSpoke3Subnet1Ref = resourceId(
-  'Microsoft.Network/virtualNetworks/subnets',
-  varVnetSpoke3Name,
-  varVnetSpoke3Subnet1Name
-)
 
 var varVnetSpoke4Name = 'spoke4'
-var varVnetSpoke4Region = parRegion2
+var varVnetSpoke4Region = parVwanHub2Region
 var varVnetSpoke4AddressPrefix = '10.4.0.0/24'
 var varVnetSpoke4Subnet1Name = 'main'
 var varVnetSpoke4Subnet1AddressPrefix = '10.4.0.0/27'
-var varVnetSpoke4Subnet1Ref = resourceId(
-  'Microsoft.Network/virtualNetworks/subnets',
-  varVnetSpoke4Name,
-  varVnetSpoke4Subnet1Name
-)
 
 var varVnetSpoke5Name = 'spoke5'
-var varVnetSpoke5Region = parRegion1
+var varVnetSpoke5Region = parVwanHub1Region
 var varVnetSpoke5AddressPrefix = '10.2.1.0/24'
 var varVnetSpoke5Subnet1Name = 'main'
 var varVnetSpoke5Subnet1AddressPrefix = '10.2.1.0/27'
-var varVnetSpoke5Subnet1Ref = resourceId(
-  'Microsoft.Network/virtualNetworks/subnets',
-  varVnetSpoke5Name,
-  varVnetSpoke5Subnet1Name
-)
 
 var varVnetSpoke6Name = 'spoke6'
-var varVnetSpoke6Region = parRegion1
+var varVnetSpoke6Region = parVwanHub1Region
 var varVnetSpoke6AddressPrefix = '10.2.2.0/24'
 var varVnetSpoke6Subnet1Name = 'main'
 var varVnetSpoke6Subnet1AddressPrefix = '10.2.2.0/27'
-var varVnetSpoke6Subnet1Ref = resourceId(
-  'Microsoft.Network/virtualNetworks/subnets',
-  varVnetSpoke6Name,
-  varVnetSpoke6Subnet1Name
-)
 
 var varVnetSpoke7Name = 'spoke7'
-var varVnetSpoke7Region = parRegion2
+var varVnetSpoke7Region = parVwanHub2Region
 var varVnetSpoke7AddressPrefix = '10.4.1.0/24'
 var varVnetSpoke7Subnet1Name = 'main'
 var varVnetSpoke7Subnet1AddressPrefix = '10.4.1.0/27'
-var varVnetSpoke7Subnet1Ref = resourceId(
-  'Microsoft.Network/virtualNetworks/subnets',
-  varVnetSpoke7Name,
-  varVnetSpoke7Subnet1Name
-)
 
 var varVnetSpoke8Name = 'spoke8'
-var varVnetSpoke8Region = parRegion2
+var varVnetSpoke8Region = parVwanHub2Region
 var varVnetSpoke8AddressPrefix = '10.4.2.0/24'
 var varVnetSpoke8Subnet1Name = 'main'
 var varVnetSpoke8Subnet1AddressPrefix = '10.4.2.0/27'
-var varVnetSpoke8Subnet1Ref = resourceId(
-  'Microsoft.Network/virtualNetworks/subnets',
-  varVnetSpoke8Name,
-  varVnetSpoke8Subnet1Name
-)
 
 var varVnetPeeringSpoke2to5Name = '${varVnetSpoke2Name}-to-${varVnetSpoke5Name}'
 var varVnetPeeringSpoke5to2Name = '${varVnetSpoke5Name}-to-${varVnetSpoke2Name}'
@@ -202,8 +142,8 @@ var varVnetPeeringSpoke7to4Name = '${varVnetSpoke7Name}-to-${varVnetSpoke4Name}'
 var varVnetPeeringSpoke4to8Name = '${varVnetSpoke4Name}-to-${varVnetSpoke8Name}'
 var varVnetPeeringSpoke8to4Name = '${varVnetSpoke8Name}-to-${varVnetSpoke4Name}'
 
-var varNsgRegion1Name = 'default-nsg-${parRegion1}'
-var varNsgRegion2Name = 'default-nsg-${parRegion2}'
+var varNsgRegion1Name = 'default-nsg-${parVwanHub1Region}'
+var varNsgRegion2Name = 'default-nsg-${parVwanHub2Region}'
 
 var varVpnGatewayHub1Name = '${varVwanHub1Name}-vpngw'
 var varVpnGatewayHub2Name = '${varVwanHub2Name}-vpngw'
@@ -320,6 +260,7 @@ resource resVwan 'Microsoft.Network/virtualWans@2024-01-01' = {
   name: varVwanName
   location: parVwanRegion
   properties: {
+    type: 'Standard'
     disableVpnEncryption: false
     allowBranchToBranchTraffic: true
   }
@@ -327,15 +268,16 @@ resource resVwan 'Microsoft.Network/virtualWans@2024-01-01' = {
 
 resource resVwanHub1 'Microsoft.Network/virtualHubs@2024-01-01' = {
   name: varVwanHub1Name
-  location: parRegion1
+  location: parVwanHub1Region
   properties: {
     virtualWan: {
       id: resVwan.id
     }
+    sku: 'Standard'
     addressPrefix: varVwanHub1AddressPrefix
     virtualRouterAsn: varVwanAsn
-    allowBranchToBranchTraffic: false
-    hubRoutingPreference: 'ExpressRoute'
+    allowBranchToBranchTraffic: true
+    hubRoutingPreference: 'ASPath'
     virtualRouterAutoScaleConfiguration: {
       minCapacity: 2
     }
@@ -344,24 +286,107 @@ resource resVwanHub1 'Microsoft.Network/virtualHubs@2024-01-01' = {
 
 resource resVwanHub2 'Microsoft.Network/virtualHubs@2024-01-01' = {
   name: varVwanHub2Name
-  location: parRegion2
+  location: parVwanHub2Region
   properties: {
     virtualWan: {
       id: resVwan.id
     }
+    sku: 'Standard'
     addressPrefix: varVwanHub2AddressPrefix
     virtualRouterAsn: varVwanAsn
-    allowBranchToBranchTraffic: false
-    hubRoutingPreference: 'ExpressRoute'
+    allowBranchToBranchTraffic: true
+    hubRoutingPreference: 'ASPath'
     virtualRouterAutoScaleConfiguration: {
       minCapacity: 2
     }
+  }
+}
+ 
+// ----------------------------------------------------------
+// RESOURCES Wait 5 mins for vWAN Hubs to finish initialising
+// ----------------------------------------------------------
+
+@description('azPowerShellVersion - https://mcr.microsoft.com/v2/azuredeploymentscripts-powershell/tags/list')
+resource resWait 'Microsoft.Resources/deploymentScripts@2023-08-01' = {
+  name: 'wait'
+  location: resourceGroup().location
+  dependsOn: [
+    resVwanHub1
+    resVwanHub2
+  ]
+  kind:'AzurePowerShell'
+  properties: {
+    azPowerShellVersion: '12.2'
+    retentionInterval: 'PT1H'
+    cleanupPreference: 'Always'
+    scriptContent: 'start-sleep -Seconds 1800'
+  }
+}
+
+resource resNsgRegion1 'Microsoft.Network/networkSecurityGroups@2024-01-01' = {
+  name: varNsgRegion1Name
+  location: parVwanHub1Region
+  dependsOn: [
+    resWait
+  ]
+  properties: {
+    securityRules: [
+      {
+        name: 'default-allow-ssh-rdp'
+        properties: {
+          access: 'Allow'
+          direction: 'Inbound'
+          priority: 100
+          protocol: 'Tcp'
+          description: 'Allow inbound SSH/RDP'
+          sourceAddressPrefix: '*'
+          sourcePortRange: '*'
+          destinationAddressPrefix: '*'
+          destinationPortRanges: [
+            '22'
+            '3389'
+          ]
+        }
+      }
+    ]
+  }
+}
+
+resource resNsgRegion2 'Microsoft.Network/networkSecurityGroups@2024-01-01' = {
+  name: varNsgRegion2Name
+  location: parVwanHub2Region
+  dependsOn: [
+    resWait
+  ]
+  properties: {
+    securityRules: [
+      {
+        name: 'default-allow-ssh-rdp'
+        properties: {
+          access: 'Allow'
+          direction: 'Inbound'
+          priority: 100
+          protocol: 'Tcp'
+          description: 'Allow inbound SSH/RDP'
+          sourceAddressPrefix: '*'
+          sourcePortRange: '*'
+          destinationAddressPrefix: '*'
+          destinationPortRanges: [
+            '22'
+            '3389'
+          ]
+        }
+      }
+    ]
   }
 }
 
 resource resVnetBranch1 'Microsoft.Network/virtualNetworks@2024-01-01' = {
   name: varVnetBranch1Name
   location: varVnetBranch1Region
+  dependsOn: [
+    resWait
+  ]
   properties: {
     addressSpace: {
       addressPrefixes: [
@@ -397,6 +422,9 @@ resource resVnetBranch1 'Microsoft.Network/virtualNetworks@2024-01-01' = {
 resource resVnetBranch2 'Microsoft.Network/virtualNetworks@2024-01-01' = {
   name: varVnetBranch2Name
   location: varVnetBranch2Region
+  dependsOn: [
+    resWait
+  ]
   properties: {
     addressSpace: {
       addressPrefixes: [
@@ -432,6 +460,9 @@ resource resVnetBranch2 'Microsoft.Network/virtualNetworks@2024-01-01' = {
 resource resVnetSpoke1 'Microsoft.Network/virtualNetworks@2024-01-01' = {
   name: varVnetSpoke1Name
   location: varVnetSpoke1Region
+  dependsOn: [
+    resWait
+  ]
   properties: {
     addressSpace: {
       addressPrefixes: [
@@ -458,6 +489,9 @@ resource resVnetSpoke1 'Microsoft.Network/virtualNetworks@2024-01-01' = {
 resource resVnetSpoke2 'Microsoft.Network/virtualNetworks@2024-01-01' = {
   name: varVnetSpoke2Name
   location: varVnetSpoke2Region
+  dependsOn: [
+    resWait
+  ]
   properties: {
     addressSpace: {
       addressPrefixes: [
@@ -484,6 +518,9 @@ resource resVnetSpoke2 'Microsoft.Network/virtualNetworks@2024-01-01' = {
 resource resVnetSpoke3 'Microsoft.Network/virtualNetworks@2024-01-01' = {
   name: varVnetSpoke3Name
   location: varVnetSpoke3Region
+  dependsOn: [
+    resWait
+  ]
   properties: {
     addressSpace: {
       addressPrefixes: [
@@ -510,6 +547,9 @@ resource resVnetSpoke3 'Microsoft.Network/virtualNetworks@2024-01-01' = {
 resource resVnetSpoke4 'Microsoft.Network/virtualNetworks@2024-01-01' = {
   name: varVnetSpoke4Name
   location: varVnetSpoke4Region
+  dependsOn: [
+    resWait
+  ]
   properties: {
     addressSpace: {
       addressPrefixes: [
@@ -536,6 +576,9 @@ resource resVnetSpoke4 'Microsoft.Network/virtualNetworks@2024-01-01' = {
 resource resVnetSpoke5 'Microsoft.Network/virtualNetworks@2024-01-01' = {
   name: varVnetSpoke5Name
   location: varVnetSpoke5Region
+  dependsOn: [
+    resWait
+  ]
   properties: {
     addressSpace: {
       addressPrefixes: [
@@ -562,6 +605,9 @@ resource resVnetSpoke5 'Microsoft.Network/virtualNetworks@2024-01-01' = {
 resource resVnetSpoke6 'Microsoft.Network/virtualNetworks@2024-01-01' = {
   name: varVnetSpoke6Name
   location: varVnetSpoke6Region
+  dependsOn: [
+    resWait
+  ]
   properties: {
     addressSpace: {
       addressPrefixes: [
@@ -588,6 +634,9 @@ resource resVnetSpoke6 'Microsoft.Network/virtualNetworks@2024-01-01' = {
 resource resVnetSpoke7 'Microsoft.Network/virtualNetworks@2024-01-01' = {
   name: varVnetSpoke7Name
   location: varVnetSpoke7Region
+  dependsOn: [
+    resWait
+  ]
   properties: {
     addressSpace: {
       addressPrefixes: [
@@ -614,6 +663,9 @@ resource resVnetSpoke7 'Microsoft.Network/virtualNetworks@2024-01-01' = {
 resource resVnetSpoke8 'Microsoft.Network/virtualNetworks@2024-01-01' = {
   name: varVnetSpoke8Name
   location: varVnetSpoke8Region
+  dependsOn: [
+    resWait
+  ]
   properties: {
     addressSpace: {
       addressPrefixes: [
@@ -741,58 +793,6 @@ resource resVnetPeeringSpoke8to4 'Microsoft.Network/virtualNetworks/virtualNetwo
   }
 }
 
-resource resNsgRegion1 'Microsoft.Network/networkSecurityGroups@2024-01-01' = {
-  name: varNsgRegion1Name
-  location: parRegion1
-  properties: {
-    securityRules: [
-      {
-        name: 'default-allow-ssh-rdp'
-        properties: {
-          access: 'Allow'
-          direction: 'Inbound'
-          priority: 100
-          protocol: 'Tcp'
-          description: 'Allow inbound SSH/RDP'
-          sourceAddressPrefix: '*'
-          sourcePortRange: '*'
-          destinationAddressPrefix: '*'
-          destinationPortRanges: [
-            '22'
-            '3389'
-          ]
-        }
-      }
-    ]
-  }
-}
-
-resource resNsgRegion2 'Microsoft.Network/networkSecurityGroups@2024-01-01' = {
-  name: varNsgRegion2Name
-  location: parRegion2
-  properties: {
-    securityRules: [
-      {
-        name: 'default-allow-ssh-rdp'
-        properties: {
-          access: 'Allow'
-          direction: 'Inbound'
-          priority: 100
-          protocol: 'Tcp'
-          description: 'Allow inbound SSH/RDP'
-          sourceAddressPrefix: '*'
-          sourcePortRange: '*'
-          destinationAddressPrefix: '*'
-          destinationPortRanges: [
-            '22'
-            '3389'
-          ]
-        }
-      }
-    ]
-  }
-}
-
 resource resHubVirtualNetworkConnectionHub1Spoke1 'Microsoft.Network/virtualHubs/hubVirtualNetworkConnections@2024-01-01' = {
   name: varHubVirtualNetworkConnectionHub1Spoke1Name
   parent: resVwanHub1
@@ -836,6 +836,9 @@ resource resHubVirtualNetworkConnectionHub2Spoke4 'Microsoft.Network/virtualHubs
 resource resPipBranch1VpnGw 'Microsoft.Network/publicIPAddresses@2024-01-01' = {
   name: varPipBranch1VpnGwName
   location: varVnetBranch1Region
+  dependsOn: [
+    resVnetBranch1
+  ]
   sku: {
     name: 'Standard'
     tier: 'Regional'
@@ -848,6 +851,9 @@ resource resPipBranch1VpnGw 'Microsoft.Network/publicIPAddresses@2024-01-01' = {
 resource resPipBranch2VpnGw 'Microsoft.Network/publicIPAddresses@2024-01-01' = {
   name: varPipBranch2VpnGwName
   location: varVnetBranch2Region
+  dependsOn: [
+    resVnetBranch2
+  ]
   sku: {
     name: 'Standard'
     tier: 'Regional'
@@ -881,7 +887,7 @@ resource resVnetGatewayBranch1 'Microsoft.Network/virtualNetworkGateways@2024-01
         properties: {
           privateIPAllocationMethod: 'Dynamic'
           subnet: {
-            id: varVnetBranch1Subnet2Ref
+            id: resourceId('Microsoft.Network/virtualNetworks/subnets', varVnetBranch1Name, varVnetBranch1Subnet2Name)
           }
           publicIPAddress: {
             id: resPipBranch1VpnGw.id
@@ -916,7 +922,7 @@ resource resVnetGatewayBranch2 'Microsoft.Network/virtualNetworkGateways@2024-01
         properties: {
           privateIPAllocationMethod: 'Dynamic'
           subnet: {
-            id: varVnetBranch2Subnet2Ref
+            id: resourceId('Microsoft.Network/virtualNetworks/subnets', varVnetBranch2Name, varVnetBranch2Subnet2Name)
           }
           publicIPAddress: {
             id: resPipBranch2VpnGw.id
@@ -929,7 +935,7 @@ resource resVnetGatewayBranch2 'Microsoft.Network/virtualNetworkGateways@2024-01
 
 resource resVpnGatewayHub1 'Microsoft.Network/vpnGateways@2024-01-01' = {
   name: varVpnGatewayHub1Name
-  location: parRegion1
+  location: parVwanHub1Region
   properties: {
     virtualHub: {
       id: resVwanHub1.id
@@ -939,7 +945,7 @@ resource resVpnGatewayHub1 'Microsoft.Network/vpnGateways@2024-01-01' = {
 
 resource resVpnGatewayHub2 'Microsoft.Network/vpnGateways@2024-01-01' = {
   name: varVpnGatewayHub2Name
-  location: parRegion2
+  location: parVwanHub2Region
   properties: {
     virtualHub: {
       id: resVwanHub2.id
@@ -1025,7 +1031,7 @@ resource resVpnConnectionHub2Branch2 'Microsoft.Network/vpnGateways/vpnConnectio
 
 resource resLocalNetworkGatewayHub1Gw1 'Microsoft.Network/localNetworkGateways@2024-01-01' = {
   name: varVnetVwanHub1LocalNetworkGw1Name
-  location: parRegion1
+  location: parVwanHub1Region
   properties: {
     gatewayIpAddress: resVpnGatewayHub1.properties.bgpSettings.bgpPeeringAddresses[0].tunnelIpAddresses[0]
     bgpSettings: {
@@ -1037,7 +1043,7 @@ resource resLocalNetworkGatewayHub1Gw1 'Microsoft.Network/localNetworkGateways@2
 
 resource resLocalNetworkGatewayHub1Gw2 'Microsoft.Network/localNetworkGateways@2024-01-01' = {
   name: varVnetVwanHub1LocalNetworkGw2Name
-  location: parRegion1
+  location: parVwanHub1Region
   properties: {
     gatewayIpAddress: resVpnGatewayHub1.properties.bgpSettings.bgpPeeringAddresses[1].tunnelIpAddresses[0]
     bgpSettings: {
@@ -1049,7 +1055,7 @@ resource resLocalNetworkGatewayHub1Gw2 'Microsoft.Network/localNetworkGateways@2
 
 resource resLocalNetworkGatewayHub2Gw1 'Microsoft.Network/localNetworkGateways@2024-01-01' = {
   name: varVnetVwanHub2LocalNetworkGw1Name
-  location: parRegion2
+  location: parVwanHub2Region
   properties: {
     gatewayIpAddress: resVpnGatewayHub2.properties.bgpSettings.bgpPeeringAddresses[0].tunnelIpAddresses[0]
     bgpSettings: {
@@ -1061,7 +1067,7 @@ resource resLocalNetworkGatewayHub2Gw1 'Microsoft.Network/localNetworkGateways@2
 
 resource resLocalNetworkGatewayHub2Gw2 'Microsoft.Network/localNetworkGateways@2024-01-01' = {
   name: varVnetVwanHub2LocalNetworkGw2Name
-  location: parRegion2
+  location: parVwanHub2Region
   properties: {
     gatewayIpAddress: resVpnGatewayHub2.properties.bgpSettings.bgpPeeringAddresses[1].tunnelIpAddresses[0]
     bgpSettings: {
@@ -1151,93 +1157,6 @@ resource resConnectionBranch2Hub2Gw2 'Microsoft.Network/connections@2024-01-01' 
   }
 }
 
-// ------------------------------------------------------
-// RESOURCES Wait 5 mins for vWAN Hubs to finish creating
-// ------------------------------------------------------
-
-@description('azPowerShellVersion - https://mcr.microsoft.com/v2/azuredeploymentscripts-powershell/tags/list')
-resource resWait 'Microsoft.Resources/deploymentScripts@2023-08-01' = {
-  name: 'wait'
-  location: resourceGroup().location
-  dependsOn: [
-    resVwanHub1
-    resVwanHub2
-  ]
-  kind:'AzurePowerShell'
-  properties: {
-    azPowerShellVersion: 'az12.3'
-    retentionInterval: 'PT1H'
-    cleanupPreference: 'Always'
-    scriptContent: 'start-sleep -Seconds 300'
-  }
-}
-
-// -----------------------------------------------
-// RESOURCES Wait for vWAN Hubs to finish creating
-// -----------------------------------------------
-
-resource resVwanHub1VmSpoke21BgpConnection 'Microsoft.Network/virtualHubs/bgpConnections@2024-01-01' = {
-  name: varVwanHub1VmSpoke21BgpConnectionName
-  parent: resVwanHub1
-  dependsOn: [
-    resWait
-  ]
-  properties: {
-    peerAsn: varSpoke2Asn
-    peerIp: resVmSpoke21Nic.properties.ipConfigurations[0].properties.privateIPAddress
-    hubVirtualNetworkConnection: {
-      id: resHubVirtualNetworkConnectionHub1Spoke2.id
-    }
-  }
-}
-
-resource resVwanHub1VmSpoke22BgpConnection 'Microsoft.Network/virtualHubs/bgpConnections@2024-01-01' = {
-  name: varVwanHub1VmSpoke22BgpConnectionName
-  parent: resVwanHub1
-  dependsOn: [
-    resWait
-    resVwanHub1VmSpoke21BgpConnection
-  ]
-  properties: {
-    peerAsn: varSpoke2Asn
-    peerIp: resVmSpoke22Nic.properties.ipConfigurations[0].properties.privateIPAddress
-    hubVirtualNetworkConnection: {
-      id: resHubVirtualNetworkConnectionHub1Spoke2.id
-    }
-  }
-}
-
-resource resVwanHub2VmSpoke41BgpConnection 'Microsoft.Network/virtualHubs/bgpConnections@2024-01-01' = {
-  name: varVwanHub2VmSpoke41BgpConnectionName
-  parent: resVwanHub2
-  dependsOn: [
-    resWait
-  ]
-  properties: {
-    peerAsn: varSpoke4Asn
-    peerIp: resVmSpoke41Nic.properties.ipConfigurations[0].properties.privateIPAddress
-    hubVirtualNetworkConnection: {
-      id: resHubVirtualNetworkConnectionHub2Spoke4.id
-    }
-  }
-}
-
-resource resVwanHub2VmSpoke42BgpConnection 'Microsoft.Network/virtualHubs/bgpConnections@2024-01-01' = {
-  name: varVwanHub2VmSpoke42BgpConnectionName
-  parent: resVwanHub2
-  dependsOn: [
-    resWait
-    resVwanHub2VmSpoke41BgpConnection
-  ]
-  properties: {
-    peerAsn: varSpoke4Asn
-    peerIp: resVmSpoke42Nic.properties.ipConfigurations[0].properties.privateIPAddress
-    hubVirtualNetworkConnection: {
-      id: resHubVirtualNetworkConnectionHub2Spoke4.id
-    }
-  }
-}
-
 // -----------------------------------------
 // RESOURCES (FRR VMs in Spokes 2 & 4)
 // -----------------------------------------
@@ -1246,7 +1165,6 @@ resource resVmSpoke21 'Microsoft.Compute/virtualMachines@2024-07-01' = {
   name: varVmSpoke21Name
   location: varVnetSpoke2Region
   dependsOn: [
-    resWait
     resVnetSpoke2
   ]
   identity: {
@@ -1328,7 +1246,7 @@ resource resVmSpoke21Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
           privateIPAddressVersion: 'IPv4'
           privateIPAllocationMethod: 'Dynamic'
           subnet: {
-            id: varVnetSpoke2Subnet1Ref
+            id: resourceId('Microsoft.Network/virtualNetworks/subnets', varVnetSpoke2Name, varVnetSpoke2Subnet1Name)
           }
           loadBalancerBackendAddressPools: [
             {
@@ -1350,6 +1268,9 @@ resource resVmSpoke21Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
 resource resVmSpoke21Pip 'Microsoft.Network/publicIPAddresses@2024-01-01' = {
   name: varVmSpoke21PipName
   location: varVnetSpoke2Region
+  dependsOn: [
+    resVnetSpoke2
+  ]
   sku: {
     name: 'Standard'
     tier: 'Regional'
@@ -1433,7 +1354,6 @@ resource resVmSpoke22 'Microsoft.Compute/virtualMachines@2024-07-01' = {
   name: varVmSpoke22Name
   location: varVnetSpoke2Region
   dependsOn: [
-    resWait
     resVnetSpoke2
   ]
   identity: {
@@ -1515,7 +1435,7 @@ resource resVmSpoke22Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
           privateIPAddressVersion: 'IPv4'
           privateIPAllocationMethod: 'Dynamic'
           subnet: {
-            id: varVnetSpoke2Subnet1Ref
+            id: resourceId('Microsoft.Network/virtualNetworks/subnets', varVnetSpoke2Name, varVnetSpoke2Subnet1Name)
           }
           loadBalancerBackendAddressPools: [
             {
@@ -1537,6 +1457,9 @@ resource resVmSpoke22Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
 resource resVmSpoke22Pip 'Microsoft.Network/publicIPAddresses@2024-01-01' = {
   name: varVmSpoke22PipName
   location: varVnetSpoke2Region
+  dependsOn: [
+    resVnetSpoke2
+  ]
   sku: {
     name: 'Standard'
     tier: 'Regional'
@@ -1634,7 +1557,7 @@ resource resSpoke2LoadBalancer 'Microsoft.Network/loadBalancers@2024-01-01' = {
           privateIPAllocationMethod: 'Dynamic'
           privateIPAddressVersion: 'IPv4'
           subnet: {
-            id: varVnetSpoke2Subnet1Ref
+            id: resourceId('Microsoft.Network/virtualNetworks/subnets', varVnetSpoke2Name, varVnetSpoke2Subnet1Name)
           }
         }
       }
@@ -1678,7 +1601,6 @@ resource resVmSpoke41 'Microsoft.Compute/virtualMachines@2024-07-01' = {
   name: varVmSpoke41Name
   location: varVnetSpoke4Region
   dependsOn: [
-    resWait
     resVnetSpoke4    
   ]
   identity: {
@@ -1760,7 +1682,7 @@ resource resVmSpoke41Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
           privateIPAddressVersion: 'IPv4'
           privateIPAllocationMethod: 'Dynamic'
           subnet: {
-            id: varVnetSpoke4Subnet1Ref
+            id: resourceId('Microsoft.Network/virtualNetworks/subnets', varVnetSpoke4Name, varVnetSpoke4Subnet1Name)
           }
           loadBalancerBackendAddressPools: [
             {
@@ -1782,6 +1704,9 @@ resource resVmSpoke41Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
 resource resVmSpoke41Pip 'Microsoft.Network/publicIPAddresses@2024-01-01' = {
   name: varVmSpoke41PipName
   location: varVnetSpoke4Region
+  dependsOn: [
+    resVnetSpoke4
+  ]
   sku: {
     name: 'Standard'
     tier: 'Regional'
@@ -1865,7 +1790,6 @@ resource resVmSpoke42 'Microsoft.Compute/virtualMachines@2024-07-01' = {
   name: varVmSpoke42Name
   location: varVnetSpoke4Region
   dependsOn: [
-    resWait
     resVnetSpoke4    
   ]
   identity: {
@@ -1947,7 +1871,7 @@ resource resVmSpoke42Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
           privateIPAddressVersion: 'IPv4'
           privateIPAllocationMethod: 'Dynamic'
           subnet: {
-            id: varVnetSpoke4Subnet1Ref
+            id: resourceId('Microsoft.Network/virtualNetworks/subnets', varVnetSpoke4Name, varVnetSpoke4Subnet1Name)
           }
           loadBalancerBackendAddressPools: [
             {
@@ -1969,6 +1893,9 @@ resource resVmSpoke42Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
 resource resVmSpoke42Pip 'Microsoft.Network/publicIPAddresses@2024-01-01' = {
   name: varVmSpoke42PipName
   location: varVnetSpoke4Region
+  dependsOn: [
+    resVnetSpoke4
+  ]
   sku: {
     name: 'Standard'
     tier: 'Regional'
@@ -2066,7 +1993,7 @@ resource resSpoke4LoadBalancer 'Microsoft.Network/loadBalancers@2024-01-01' = {
           privateIPAllocationMethod: 'Dynamic'
           privateIPAddressVersion: 'IPv4'
           subnet: {
-            id: varVnetSpoke4Subnet1Ref
+            id: resourceId('Microsoft.Network/virtualNetworks/subnets', varVnetSpoke4Name, varVnetSpoke4Subnet1Name)
           }
         }
       }
@@ -2106,6 +2033,60 @@ resource resSpoke4LoadBalancer 'Microsoft.Network/loadBalancers@2024-01-01' = {
   }
 }
 
+resource resVwanHub1VmSpoke21BgpConnection 'Microsoft.Network/virtualHubs/bgpConnections@2024-01-01' = {
+  name: varVwanHub1VmSpoke21BgpConnectionName
+  parent: resVwanHub1
+  properties: {
+    peerAsn: varSpoke2Asn
+    peerIp: resVmSpoke21Nic.properties.ipConfigurations[0].properties.privateIPAddress
+    hubVirtualNetworkConnection: {
+      id: resHubVirtualNetworkConnectionHub1Spoke2.id
+    }
+  }
+}
+
+resource resVwanHub1VmSpoke22BgpConnection 'Microsoft.Network/virtualHubs/bgpConnections@2024-01-01' = {
+  name: varVwanHub1VmSpoke22BgpConnectionName
+  parent: resVwanHub1
+  dependsOn: [
+    resVwanHub1VmSpoke21BgpConnection
+  ]
+  properties: {
+    peerAsn: varSpoke2Asn
+    peerIp: resVmSpoke22Nic.properties.ipConfigurations[0].properties.privateIPAddress
+    hubVirtualNetworkConnection: {
+      id: resHubVirtualNetworkConnectionHub1Spoke2.id
+    }
+  }
+}
+
+resource resVwanHub2VmSpoke41BgpConnection 'Microsoft.Network/virtualHubs/bgpConnections@2024-01-01' = {
+  name: varVwanHub2VmSpoke41BgpConnectionName
+  parent: resVwanHub2
+  properties: {
+    peerAsn: varSpoke4Asn
+    peerIp: resVmSpoke41Nic.properties.ipConfigurations[0].properties.privateIPAddress
+    hubVirtualNetworkConnection: {
+      id: resHubVirtualNetworkConnectionHub2Spoke4.id
+    }
+  }
+}
+
+resource resVwanHub2VmSpoke42BgpConnection 'Microsoft.Network/virtualHubs/bgpConnections@2024-01-01' = {
+  name: varVwanHub2VmSpoke42BgpConnectionName
+  parent: resVwanHub2
+  dependsOn: [
+    resVwanHub2VmSpoke41BgpConnection
+  ]
+  properties: {
+    peerAsn: varSpoke4Asn
+    peerIp: resVmSpoke42Nic.properties.ipConfigurations[0].properties.privateIPAddress
+    hubVirtualNetworkConnection: {
+      id: resHubVirtualNetworkConnectionHub2Spoke4.id
+    }
+  }
+}
+
 // --------------------------------
 // RESOURCES (Test VMs)
 // --------------------------------
@@ -2114,42 +2095,42 @@ resource resSpoke4LoadBalancer 'Microsoft.Network/loadBalancers@2024-01-01' = {
 var varTestVMs = [
   {
     name: 'vm-${varVnetBranch1Name}'
-    region: parRegion1
+    region: parVwanHub1Region
     vnet: varVnetBranch1Name
   }
   {
     name: 'vm-${varVnetBranch2Name}'
-    region: parRegion2
+    region: parVwanHub2Region
     vnet: varVnetBranch2Name
   }
   {
     name: 'vm-${varVnetSpoke1Name}'
-    region: parRegion1
+    region: parVwanHub1Region
     vnet: varVnetSpoke1Name
   }
   {
     name: 'vm-${varVnetSpoke3Name}'
-    region: parRegion2
+    region: parVwanHub2Region
     vnet: varVnetSpoke3Name
   }
   {
     name: 'vm-${varVnetSpoke5Name}'
-    region: parRegion1
+    region: parVwanHub1Region
     vnet: varVnetSpoke5Name
   }
   {
     name: 'vm-${varVnetSpoke6Name}'
-    region: parRegion1
+    region: parVwanHub1Region
     vnet: varVnetSpoke6Name
   }
   {
     name: 'vm-${varVnetSpoke7Name}'
-    region: parRegion2
+    region: parVwanHub2Region
     vnet: varVnetSpoke7Name
   }
   {
     name: 'vm-${varVnetSpoke8Name}'
-    region: parRegion2
+    region: parVwanHub2Region
     vnet: varVnetSpoke8Name
   }
 ]
@@ -2157,6 +2138,18 @@ var varTestVMs = [
 resource resTestVmPips 'Microsoft.Network/publicIPAddresses@2024-01-01'= [for varTestVM in varTestVMs: {
   name: '${varTestVM.name}-pip'
   location: varTestVM.region
+  dependsOn: [
+    resVnetBranch1
+    resVnetBranch2
+    resVnetSpoke1
+    resVnetSpoke2
+    resVnetSpoke3
+    resVnetSpoke4
+    resVnetSpoke5
+    resVnetSpoke6
+    resVnetSpoke7
+    resVnetSpoke8
+  ]
   sku: {
     name: 'Standard'
     tier: 'Regional'
@@ -2336,3 +2329,4 @@ resource resTestVmsSchedule 'Microsoft.DevTestLab/schedules@2018-09-15' = [for v
     }
   }
 }]
+
