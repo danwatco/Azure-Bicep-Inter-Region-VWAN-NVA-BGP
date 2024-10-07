@@ -55,9 +55,17 @@ var varVwanName = 'vwan-nvabgp'
 
 var varVwanHub1Name = 'hub1'
 var varVwanHub1AddressPrefix = '192.168.1.0/24'
+var varVwanHub1VirtualRouterIps = [
+  '192.168.1.68'
+  '192.168.1.69'
+]
 
 var varVwanHub2Name = 'hub2'
 var varVwanHub2AddressPrefix = '192.168.2.0/24'
+var varVwanHub2VirtualRouterIps = [
+  '192.168.2.68'
+  '192.168.2.69'
+]
 
 var varVwanAsn = 65515
 var varOnPremisesAsn = 65510
@@ -274,6 +282,7 @@ resource resVwanHub1 'Microsoft.Network/virtualHubs@2024-01-01' = {
       id: resVwan.id
     }
     sku: 'Standard'
+    virtualRouterIps: varVwanHub1VirtualRouterIps
     addressPrefix: varVwanHub1AddressPrefix
     virtualRouterAsn: varVwanAsn
     allowBranchToBranchTraffic: true
@@ -292,6 +301,7 @@ resource resVwanHub2 'Microsoft.Network/virtualHubs@2024-01-01' = {
       id: resVwan.id
     }
     sku: 'Standard'
+    virtualRouterIps: varVwanHub2VirtualRouterIps
     addressPrefix: varVwanHub2AddressPrefix
     virtualRouterAsn: varVwanAsn
     allowBranchToBranchTraffic: true
@@ -303,7 +313,7 @@ resource resVwanHub2 'Microsoft.Network/virtualHubs@2024-01-01' = {
 }
  
 // ----------------------------------------------------------
-// RESOURCES Wait 5 mins for vWAN Hubs to finish initialising
+// RESOURCES Wait 30 mins for vWAN Hubs to finish initialising
 // ----------------------------------------------------------
 
 @description('azPowerShellVersion - https://mcr.microsoft.com/v2/azuredeploymentscripts-powershell/tags/list')
@@ -936,6 +946,9 @@ resource resVnetGatewayBranch2 'Microsoft.Network/virtualNetworkGateways@2024-01
 resource resVpnGatewayHub1 'Microsoft.Network/vpnGateways@2024-01-01' = {
   name: varVpnGatewayHub1Name
   location: parVwanHub1Region
+  dependsOn: [
+    resWait
+  ]
   properties: {
     virtualHub: {
       id: resVwanHub1.id
@@ -946,6 +959,9 @@ resource resVpnGatewayHub1 'Microsoft.Network/vpnGateways@2024-01-01' = {
 resource resVpnGatewayHub2 'Microsoft.Network/vpnGateways@2024-01-01' = {
   name: varVpnGatewayHub2Name
   location: parVwanHub2Region
+  dependsOn: [
+    resWait
+  ]
   properties: {
     virtualHub: {
       id: resVwanHub2.id
@@ -1327,7 +1343,7 @@ resource resVmSpoke21CustomScript 'Microsoft.Compute/virtualMachines/extensions@
       fileUris: [
         'https://raw.githubusercontent.com/simonhutson/Azure-Bicep-Inter-Region-VWAN-NVA-BGP/refs/heads/main/linuxrouterbgpfrr.sh'
       ]
-      commandToExecute: 'sh linuxrouterbgpfrr.sh azureuser ${varSpoke2Asn} ${resVmSpoke21Nic.properties.ipConfigurations[0].properties.privateIPAddress} 10.2.0.0/16 ${resVwanHub1.properties.virtualRouterIps[0]} ${resVwanHub1.properties.virtualRouterIps[1]}'
+      commandToExecute: 'sh linuxrouterbgpfrr.sh azureuser ${varSpoke2Asn} ${resVmSpoke21Nic.properties.ipConfigurations[0].properties.privateIPAddress} 10.2.0.0/16 ${varVwanHub1VirtualRouterIps[0]} ${varVwanHub1VirtualRouterIps[1]}'
     }
   }
 }
@@ -1516,7 +1532,7 @@ resource resVmSpoke22CustomScript 'Microsoft.Compute/virtualMachines/extensions@
       fileUris: [
         'https://raw.githubusercontent.com/simonhutson/Azure-Bicep-Inter-Region-VWAN-NVA-BGP/refs/heads/main/linuxrouterbgpfrr.sh'
       ]
-      commandToExecute: 'sh linuxrouterbgpfrr.sh azureuser ${varSpoke2Asn} ${resVmSpoke22Nic.properties.ipConfigurations[0].properties.privateIPAddress} 10.2.0.0/16 ${resVwanHub1.properties.virtualRouterIps[0]} ${resVwanHub1.properties.virtualRouterIps[1]}'
+      commandToExecute: 'sh linuxrouterbgpfrr.sh azureuser ${varSpoke2Asn} ${resVmSpoke22Nic.properties.ipConfigurations[0].properties.privateIPAddress} 10.2.0.0/16 ${varVwanHub1VirtualRouterIps[0]} ${varVwanHub1VirtualRouterIps[1]}'
     }
   }
 }
@@ -1763,7 +1779,7 @@ resource resVmSpoke41CustomScript 'Microsoft.Compute/virtualMachines/extensions@
       fileUris: [
         'https://raw.githubusercontent.com/simonhutson/Azure-Bicep-Inter-Region-VWAN-NVA-BGP/refs/heads/main/linuxrouterbgpfrr.sh'
       ]
-      commandToExecute: 'sh linuxrouterbgpfrr.sh azureuser ${varSpoke4Asn} ${resVmSpoke41Nic.properties.ipConfigurations[0].properties.privateIPAddress} 10.4.0.0/16 ${resVwanHub2.properties.virtualRouterIps[0]} ${resVwanHub2.properties.virtualRouterIps[1]}'
+      commandToExecute: 'sh linuxrouterbgpfrr.sh azureuser ${varSpoke4Asn} ${resVmSpoke41Nic.properties.ipConfigurations[0].properties.privateIPAddress} 10.4.0.0/16 ${varVwanHub2VirtualRouterIps[0]} ${varVwanHub2VirtualRouterIps[1]}'
     }
   }
 }
@@ -1952,7 +1968,7 @@ resource resVmSpoke42CustomScript 'Microsoft.Compute/virtualMachines/extensions@
       fileUris: [
         'https://raw.githubusercontent.com/simonhutson/Azure-Bicep-Inter-Region-VWAN-NVA-BGP/refs/heads/main/linuxrouterbgpfrr.sh'
       ]
-      commandToExecute: 'sh linuxrouterbgpfrr.sh azureuser ${varSpoke4Asn} ${resVmSpoke42Nic.properties.ipConfigurations[0].properties.privateIPAddress} 10.4.0.0/16 ${resVwanHub2.properties.virtualRouterIps[0]} ${resVwanHub2.properties.virtualRouterIps[1]}'
+      commandToExecute: 'sh linuxrouterbgpfrr.sh azureuser ${varSpoke4Asn} ${resVmSpoke42Nic.properties.ipConfigurations[0].properties.privateIPAddress} 10.4.0.0/16 ${varVwanHub2VirtualRouterIps[0]} ${varVwanHub2VirtualRouterIps[1]}'
     }
   }
 }
