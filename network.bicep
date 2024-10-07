@@ -226,41 +226,12 @@ var varLoadBalancerFrontEndSpoke2Name = '${varLoadBalancerSpoke2Name}-fe'
 var varLoadBalancerBackEndSpoke2Name = '${varLoadBalancerSpoke2Name}-be'
 var varLoadBalancerProbeSpoke2Name = '${varLoadBalancerSpoke2Name}-probe'
 var varLoadBalancerRuleSpoke2Name = '${varLoadBalancerSpoke2Name}-rule'
-// var varSpoke2LoadBalancerFrontEndRef = resourceId(
-//   'Microsoft.Network/loadBalancers/frontendIPConfigurations',
-//   varSpoke2LoadBalancerName,
-//   varSpoke2LoadBalancerFrontEndName
-// )
-// var varSpoke2LoadBalancerBackEndRef = resourceId(
-//   'Microsoft.Network/loadBalancers/backendAddressPools',
-//   varSpoke2LoadBalancerName,
-//   varSpoke2LoadBalancerBackEndName
-// )
-// var varSpoke2LoadBalancerProbeRef = resourceId(
-//   'Microsoft.Network/loadBalancers/probes',
-//   varSpoke2LoadBalancerName,
-//   varSpoke2LoadBalancerProbeName
-// )
+
 var varLoadBalancerSpoke4Name = '${varVnetSpoke4Name}-lb'
 var varLoadBalancerFrontEndSpoke4Name = '${varLoadBalancerSpoke4Name}-fe'
 var varLoadBalancerBackEndSpoke4Name = '${varLoadBalancerSpoke4Name}-be'
 var varLoadBalancerProbeSpoke4Name = '${varLoadBalancerSpoke4Name}-probe'
 var varLoadBalancerRuleSpoke4Name = '${varLoadBalancerSpoke4Name}-rule'
-// var varSpoke4LoadBalancerFrontEndRef = resourceId(
-//   'Microsoft.Network/loadBalancers/frontendIPConfigurations',
-//   varSpoke4LoadBalancerName,
-//   varSpoke4LoadBalancerFrontEndName
-// )
-// var varSpoke4LoadBalancerBackEndRef = resourceId(
-//   'Microsoft.Network/loadBalancers/backendAddressPools',
-//   varSpoke4LoadBalancerName,
-//   varSpoke4LoadBalancerBackEndName
-// )
-var varSpoke4LoadBalancerProbeRef = resourceId(
-  'Microsoft.Network/loadBalancers/probes',
-  varLoadBalancerSpoke4Name,
-  varLoadBalancerProbeSpoke4Name
-)
 
 // --------------------
 // RESOURCES Networking
@@ -331,7 +302,7 @@ resource resWait 'Microsoft.Resources/deploymentScripts@2023-08-01' = {
     azPowerShellVersion: '12.2'
     retentionInterval: 'PT1H'
     cleanupPreference: 'Always'
-    scriptContent: 'start-sleep -Seconds 300'
+    scriptContent: 'start-sleep -Seconds 1800'
   }
 }
 
