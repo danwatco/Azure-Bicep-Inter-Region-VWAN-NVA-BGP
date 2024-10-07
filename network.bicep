@@ -153,6 +153,9 @@ var varVnetPeeringSpoke8to4Name = '${varVnetSpoke8Name}-to-${varVnetSpoke4Name}'
 var varNsgRegion1Name = 'default-nsg-${parVwanHub1Region}'
 var varNsgRegion2Name = 'default-nsg-${parVwanHub2Region}'
 
+var varRouteTableSpoke2Name = 'default-udr-${parVwanHub1Region}'
+var varRouteTableSpoke4Name = 'default-udr-${parVwanHub2Region}'
+
 var varVpnGatewayHub1Name = '${varVwanHub1Name}-vpngw'
 var varVpnGatewayHub2Name = '${varVwanHub2Name}-vpngw'
 
@@ -182,7 +185,6 @@ var varConnectionBranch1Hub1Gw1Name = '${varVnetBranch1Name}-to-${varVwanHub1Nam
 var varConnectionBranch1Hub1Gw2Name = '${varVnetBranch1Name}-to-${varVwanHub1Name}-gw2-conn'
 var varConnectionBranch2Hub2Gw1Name = '${varVnetBranch2Name}-to-${varVwanHub2Name}-gw1-conn'
 var varConnectionBranch2Hub2Gw2Name = '${varVnetBranch2Name}-to-${varVwanHub2Name}-gw2-conn'
-
 
 var varVmSpoke21Name = 'vm-${varVnetSpoke2Name}-1'
 var varVmSpoke22Name = 'vm-${varVnetSpoke2Name}-2'
@@ -219,45 +221,45 @@ var varVmSpoke22Schedule = 'shutdown-computevm-${varVmSpoke22Name}'
 var varVmSpoke41Schedule = 'shutdown-computevm-${varVmSpoke41Name}'
 var varVmSpoke42Schedule = 'shutdown-computevm-${varVmSpoke42Name}'
 
-var varSpoke2LoadBalancerName = '${varVnetSpoke2Name}-lb'
-var varSpoke2LoadBalancerFrontEndName = '${varSpoke2LoadBalancerName}-fe'
-var varSpoke2LoadBalancerBackEndName = '${varSpoke2LoadBalancerName}-be'
-var varSpoke2LoadBalancerProbeName = '${varSpoke2LoadBalancerName}-probe'
-var varSpoke2LoadBalancerRuleName = '${varSpoke2LoadBalancerName}-rule'
-var varSpoke2LoadBalancerFrontEndRef = resourceId(
-  'Microsoft.Network/loadBalancers/frontendIPConfigurations',
-  varSpoke2LoadBalancerName,
-  varSpoke2LoadBalancerFrontEndName
-)
-var varSpoke2LoadBalancerBackEndRef = resourceId(
-  'Microsoft.Network/loadBalancers/backendAddressPools',
-  varSpoke2LoadBalancerName,
-  varSpoke2LoadBalancerBackEndName
-)
-var varSpoke2LoadBalancerProbeRef = resourceId(
-  'Microsoft.Network/loadBalancers/probes',
-  varSpoke2LoadBalancerName,
-  varSpoke2LoadBalancerProbeName
-)
-var varSpoke4LoadBalancerName = '${varVnetSpoke4Name}-lb'
-var varSpoke4LoadBalancerFrontEndName = '${varSpoke4LoadBalancerName}-fe'
-var varSpoke4LoadBalancerBackEndName = '${varSpoke4LoadBalancerName}-be'
-var varSpoke4LoadBalancerProbeName = '${varSpoke4LoadBalancerName}-probe'
-var varSpoke4LoadBalancerRuleName = '${varSpoke4LoadBalancerName}-rule'
-var varSpoke4LoadBalancerFrontEndRef = resourceId(
-  'Microsoft.Network/loadBalancers/frontendIPConfigurations',
-  varSpoke4LoadBalancerName,
-  varSpoke4LoadBalancerFrontEndName
-)
-var varSpoke4LoadBalancerBackEndRef = resourceId(
-  'Microsoft.Network/loadBalancers/backendAddressPools',
-  varSpoke4LoadBalancerName,
-  varSpoke4LoadBalancerBackEndName
-)
+var varLoadBalancerSpoke2Name = '${varVnetSpoke2Name}-lb'
+var varLoadBalancerFrontEndSpoke2Name = '${varLoadBalancerSpoke2Name}-fe'
+var varLoadBalancerBackEndSpoke2Name = '${varLoadBalancerSpoke2Name}-be'
+var varLoadBalancerProbeSpoke2Name = '${varLoadBalancerSpoke2Name}-probe'
+var varLoadBalancerRuleSpoke2Name = '${varLoadBalancerSpoke2Name}-rule'
+// var varSpoke2LoadBalancerFrontEndRef = resourceId(
+//   'Microsoft.Network/loadBalancers/frontendIPConfigurations',
+//   varSpoke2LoadBalancerName,
+//   varSpoke2LoadBalancerFrontEndName
+// )
+// var varSpoke2LoadBalancerBackEndRef = resourceId(
+//   'Microsoft.Network/loadBalancers/backendAddressPools',
+//   varSpoke2LoadBalancerName,
+//   varSpoke2LoadBalancerBackEndName
+// )
+// var varSpoke2LoadBalancerProbeRef = resourceId(
+//   'Microsoft.Network/loadBalancers/probes',
+//   varSpoke2LoadBalancerName,
+//   varSpoke2LoadBalancerProbeName
+// )
+var varLoadBalancerSpoke4Name = '${varVnetSpoke4Name}-lb'
+var varLoadBalancerFrontEndSpoke4Name = '${varLoadBalancerSpoke4Name}-fe'
+var varLoadBalancerBackEndSpoke4Name = '${varLoadBalancerSpoke4Name}-be'
+var varLoadBalancerProbeSpoke4Name = '${varLoadBalancerSpoke4Name}-probe'
+var varLoadBalancerRuleSpoke4Name = '${varLoadBalancerSpoke4Name}-rule'
+// var varSpoke4LoadBalancerFrontEndRef = resourceId(
+//   'Microsoft.Network/loadBalancers/frontendIPConfigurations',
+//   varSpoke4LoadBalancerName,
+//   varSpoke4LoadBalancerFrontEndName
+// )
+// var varSpoke4LoadBalancerBackEndRef = resourceId(
+//   'Microsoft.Network/loadBalancers/backendAddressPools',
+//   varSpoke4LoadBalancerName,
+//   varSpoke4LoadBalancerBackEndName
+// )
 var varSpoke4LoadBalancerProbeRef = resourceId(
   'Microsoft.Network/loadBalancers/probes',
-  varSpoke4LoadBalancerName,
-  varSpoke4LoadBalancerProbeName
+  varLoadBalancerSpoke4Name,
+  varLoadBalancerProbeSpoke4Name
 )
 
 // --------------------
@@ -329,7 +331,7 @@ resource resWait 'Microsoft.Resources/deploymentScripts@2023-08-01' = {
     azPowerShellVersion: '12.2'
     retentionInterval: 'PT1H'
     cleanupPreference: 'Always'
-    scriptContent: 'start-sleep -Seconds 1800'
+    scriptContent: 'start-sleep -Seconds 300'
   }
 }
 
@@ -385,6 +387,62 @@ resource resNsgRegion2 'Microsoft.Network/networkSecurityGroups@2024-01-01' = {
             '22'
             '3389'
           ]
+        }
+      }
+    ]
+  }
+}
+
+resource resRouteTableSpoke2 'Microsoft.Network/routeTables@2024-01-01' = {
+  name: varRouteTableSpoke2Name
+  location: varVnetSpoke2Region
+  dependsOn: [
+    resWait
+  ]
+  properties: {
+    disableBgpRoutePropagation: true
+    routes: [
+      {
+        name: 'AzureCloud-to-Internet'
+        properties: {
+          addressPrefix: 'AzureCloud'
+          nextHopType: 'Internet'
+        }
+      }
+      {
+        name: 'Default-to-NVA'
+        properties: {
+          addressPrefix: '0.0.0.0/0'
+          nextHopType: 'VirtualAppliance'
+          nextHopIpAddress: resLoadBalancerSpoke2.properties.frontendIPConfigurations[0].properties.privateIPAddress
+        }
+      }
+    ]
+  }
+}
+
+resource resRouteTableSpoke4 'Microsoft.Network/routeTables@2024-01-01' = {
+  name: varRouteTableSpoke4Name
+  location: varVnetSpoke4Region
+  dependsOn: [
+    resWait
+  ]
+  properties: {
+    disableBgpRoutePropagation: true
+    routes: [
+      {
+        name: 'AzureCloud-to-Internet'
+        properties: {
+          addressPrefix: 'AzureCloud'
+          nextHopType: 'Internet'
+        }
+      }
+      {
+        name: 'Default-to-NVA'
+        properties: {
+          addressPrefix: '0.0.0.0/0'
+          nextHopType: 'VirtualAppliance'
+          nextHopIpAddress: resLoadBalancerSpoke4.properties.frontendIPConfigurations[0].properties.privateIPAddress
         }
       }
     ]
@@ -606,6 +664,9 @@ resource resVnetSpoke5 'Microsoft.Network/virtualNetworks@2024-01-01' = {
           networkSecurityGroup: {
             id: resNsgRegion1.id
           }
+          routeTable: {
+            id: resRouteTableSpoke2.id
+          }
         }
       }
     ]
@@ -634,6 +695,9 @@ resource resVnetSpoke6 'Microsoft.Network/virtualNetworks@2024-01-01' = {
           defaultOutboundAccess: false
           networkSecurityGroup: {
             id: resNsgRegion1.id
+          }
+          routeTable: {
+            id: resRouteTableSpoke2.id
           }
         }
       }
@@ -664,6 +728,9 @@ resource resVnetSpoke7 'Microsoft.Network/virtualNetworks@2024-01-01' = {
           networkSecurityGroup: {
             id: resNsgRegion2.id
           }
+          routeTable: {
+            id: resRouteTableSpoke4.id
+          }
         }
       }
     ]
@@ -692,6 +759,9 @@ resource resVnetSpoke8 'Microsoft.Network/virtualNetworks@2024-01-01' = {
           defaultOutboundAccess: false
           networkSecurityGroup: {
             id: resNsgRegion2.id
+          }
+          routeTable: {
+            id: resRouteTableSpoke4.id
           }
         }
       }
@@ -1250,7 +1320,7 @@ resource resVmSpoke21Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
   location: varVnetSpoke2Region
   dependsOn: [
     resVnetSpoke2
-    resSpoke2LoadBalancer
+    resLoadBalancerSpoke2
   ]
   properties: {
     enableAcceleratedNetworking: true
@@ -1266,7 +1336,11 @@ resource resVmSpoke21Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
           }
           loadBalancerBackendAddressPools: [
             {
-              id: varSpoke2LoadBalancerBackEndRef
+              id: resourceId(
+                'Microsoft.Network/loadBalancers/backendAddressPools',
+                varLoadBalancerSpoke2Name,
+                varLoadBalancerBackEndSpoke2Name
+              )
             }
           ]
           publicIPAddress: {
@@ -1439,7 +1513,7 @@ resource resVmSpoke22Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
   location: varVnetSpoke2Region
   dependsOn: [
     resVnetSpoke2
-    resSpoke2LoadBalancer
+    resLoadBalancerSpoke2
   ]
   properties: {
     enableAcceleratedNetworking: true
@@ -1455,7 +1529,11 @@ resource resVmSpoke22Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
           }
           loadBalancerBackendAddressPools: [
             {
-              id: varSpoke2LoadBalancerBackEndRef
+              id: resourceId(
+                'Microsoft.Network/loadBalancers/backendAddressPools',
+                varLoadBalancerSpoke2Name,
+                varLoadBalancerBackEndSpoke2Name
+              )
             }
           ]
           publicIPAddress: {
@@ -1555,8 +1633,8 @@ resource resVmSpoke22Schedule 'Microsoft.DevTestLab/schedules@2018-09-15' = {
   }
 }
 
-resource resSpoke2LoadBalancer 'Microsoft.Network/loadBalancers@2024-01-01' = {
-  name: varSpoke2LoadBalancerName
+resource resLoadBalancerSpoke2 'Microsoft.Network/loadBalancers@2024-01-01' = {
+  name: varLoadBalancerSpoke2Name
   location: varVnetSpoke2Region
   sku: {
     name: 'Standard'
@@ -1568,7 +1646,7 @@ resource resSpoke2LoadBalancer 'Microsoft.Network/loadBalancers@2024-01-01' = {
   properties: {
     frontendIPConfigurations: [
       {
-        name: varSpoke2LoadBalancerFrontEndName
+        name: varLoadBalancerFrontEndSpoke2Name
         properties: {
           privateIPAllocationMethod: 'Dynamic'
           privateIPAddressVersion: 'IPv4'
@@ -1580,12 +1658,12 @@ resource resSpoke2LoadBalancer 'Microsoft.Network/loadBalancers@2024-01-01' = {
     ]
     backendAddressPools: [
       {
-        name: varSpoke2LoadBalancerBackEndName
+        name: varLoadBalancerBackEndSpoke2Name
       }
     ]
     probes: [
       {
-        name: varSpoke2LoadBalancerProbeName
+        name: varLoadBalancerProbeSpoke2Name
         properties: {
           port: 22
           protocol: 'Tcp'
@@ -1594,18 +1672,30 @@ resource resSpoke2LoadBalancer 'Microsoft.Network/loadBalancers@2024-01-01' = {
     ]
     loadBalancingRules: [
       {
-        name: varSpoke2LoadBalancerRuleName
+        name: varLoadBalancerRuleSpoke2Name
         properties: {
           frontendPort: 0
           protocol: 'All'
           frontendIPConfiguration: {
-            id: varSpoke2LoadBalancerFrontEndRef
+            id: resourceId(
+              'Microsoft.Network/loadBalancers/frontendIPConfigurations',
+              varLoadBalancerSpoke2Name,
+              varLoadBalancerFrontEndSpoke2Name
+            )
           }
           backendAddressPool: {
-            id: varSpoke2LoadBalancerBackEndRef
+            id: resourceId(
+              'Microsoft.Network/loadBalancers/backendAddressPools',
+              varLoadBalancerSpoke2Name,
+              varLoadBalancerBackEndSpoke2Name
+            )
           }
           probe: {
-            id: varSpoke2LoadBalancerProbeRef
+            id: resourceId(
+              'Microsoft.Network/loadBalancers/probes',
+              varLoadBalancerSpoke2Name,
+              varLoadBalancerProbeSpoke2Name
+            )
           }
         }
       }
@@ -1686,7 +1776,7 @@ resource resVmSpoke41Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
   location: varVnetSpoke4Region
   dependsOn: [
     resVnetSpoke4
-    resSpoke4LoadBalancer
+    resLoadBalancerSpoke4
   ]
   properties: {
     enableAcceleratedNetworking: true
@@ -1702,7 +1792,11 @@ resource resVmSpoke41Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
           }
           loadBalancerBackendAddressPools: [
             {
-              id: varSpoke4LoadBalancerBackEndRef
+              id: resourceId(
+                'Microsoft.Network/loadBalancers/backendAddressPools',
+                varLoadBalancerSpoke4Name,
+                varLoadBalancerBackEndSpoke4Name
+              )
             }
           ]
           publicIPAddress: {
@@ -1875,7 +1969,7 @@ resource resVmSpoke42Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
   location: varVnetSpoke4Region
   dependsOn: [
     resVnetSpoke4
-    resSpoke4LoadBalancer
+    resLoadBalancerSpoke4
   ]
   properties: {
     enableAcceleratedNetworking: true
@@ -1891,7 +1985,11 @@ resource resVmSpoke42Nic 'Microsoft.Network/networkInterfaces@2024-01-01' = {
           }
           loadBalancerBackendAddressPools: [
             {
-              id: varSpoke4LoadBalancerBackEndRef
+              id: resourceId(
+                'Microsoft.Network/loadBalancers/backendAddressPools',
+                varLoadBalancerSpoke4Name,
+                varLoadBalancerBackEndSpoke4Name
+              )
             }
           ]
           publicIPAddress: {
@@ -1991,8 +2089,8 @@ resource resVmSpoke42Schedule 'Microsoft.DevTestLab/schedules@2018-09-15' = {
   }
 }
 
-resource resSpoke4LoadBalancer 'Microsoft.Network/loadBalancers@2024-01-01' = {
-  name: varSpoke4LoadBalancerName
+resource resLoadBalancerSpoke4 'Microsoft.Network/loadBalancers@2024-01-01' = {
+  name: varLoadBalancerSpoke4Name
   location: varVnetSpoke4Region
   sku: {
     name: 'Standard'
@@ -2004,7 +2102,7 @@ resource resSpoke4LoadBalancer 'Microsoft.Network/loadBalancers@2024-01-01' = {
   properties: {
     frontendIPConfigurations: [
       {
-        name: varSpoke4LoadBalancerFrontEndName
+        name: varLoadBalancerFrontEndSpoke4Name
         properties: {
           privateIPAllocationMethod: 'Dynamic'
           privateIPAddressVersion: 'IPv4'
@@ -2016,12 +2114,12 @@ resource resSpoke4LoadBalancer 'Microsoft.Network/loadBalancers@2024-01-01' = {
     ]
     backendAddressPools: [
       {
-        name: varSpoke4LoadBalancerBackEndName
+        name: varLoadBalancerBackEndSpoke4Name
       }
     ]
     probes: [
       {
-        name: varSpoke4LoadBalancerProbeName
+        name: varLoadBalancerProbeSpoke4Name
         properties: {
           port: 22
           protocol: 'Tcp'
@@ -2030,18 +2128,30 @@ resource resSpoke4LoadBalancer 'Microsoft.Network/loadBalancers@2024-01-01' = {
     ]
     loadBalancingRules: [
       {
-        name: varSpoke4LoadBalancerRuleName
+        name: varLoadBalancerRuleSpoke4Name
         properties: {
           frontendPort: 0
           protocol: 'All'
           frontendIPConfiguration: {
-            id: varSpoke4LoadBalancerFrontEndRef
+            id: resourceId(
+              'Microsoft.Network/loadBalancers/frontendIPConfigurations',
+              varLoadBalancerSpoke4Name,
+              varLoadBalancerFrontEndSpoke4Name
+            )
           }
           backendAddressPool: {
-            id: varSpoke4LoadBalancerBackEndRef
+            id: resourceId(
+              'Microsoft.Network/loadBalancers/backendAddressPools',
+              varLoadBalancerSpoke4Name,
+              varLoadBalancerBackEndSpoke4Name
+            )
           }
           probe: {
-            id: varSpoke4LoadBalancerProbeRef
+            id: resourceId(
+              'Microsoft.Network/loadBalancers/probes',
+              varLoadBalancerSpoke4Name,
+              varLoadBalancerProbeSpoke4Name
+            )
           }
         }
       }
@@ -2102,6 +2212,8 @@ resource resVwanHub2VmSpoke42BgpConnection 'Microsoft.Network/virtualHubs/bgpCon
     }
   }
 }
+
+
 
 // --------------------------------
 // RESOURCES (Test VMs)
