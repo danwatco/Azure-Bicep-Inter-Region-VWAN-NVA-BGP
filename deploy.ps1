@@ -38,9 +38,9 @@ Write-Host "Login to Entra ID and select deployment Subscription"
 Connect-AzAccount
 Write-Host
 
-$ErrorActionPreference = 'Stop'
+$errorActionPreference = 'Stop'
 $dateTime = Get-Date -f 'yyyy-MM-dd-HHmmss'
 $deploymentName = "vwan-bgp-nva-" + $dateTime
 
 Write-Host "Start BICEP Deployment."
-New-AzSubscriptionDeployment -Name $deploymentName -Location "uksouth" -TemplateFile ".\main.bicep"
+New-AzSubscriptionDeployment -Name $deploymentName -Location "uksouth" -TemplateFile ".\main.bicep" -ErrorAction $errorActionPreference
