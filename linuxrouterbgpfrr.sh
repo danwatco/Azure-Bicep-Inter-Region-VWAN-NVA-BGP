@@ -3,9 +3,11 @@
 user=$1
 asn_frr=$2
 bgp_routerId=$3
-bgp_network1=$4
-routeserver_IP1=$5
-routeserver_IP2=$6
+routeserver_IP1=$4
+routeserver_IP2=$5
+bgp_network1=$6
+bgp_network2=$7
+bgp_network3=$8
 
 # Enable IPv4 and IPv6 forwarding
 sysctl -w net.ipv4.ip_forward=1

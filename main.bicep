@@ -75,9 +75,9 @@ resource resResourceGroup 'Microsoft.Resources/resourceGroups@2024-03-01' = {
   location: parVwanRegion
 }
 
-module network 'network.bicep' = {
+module network 'resources.bicep' = {
   scope: resResourceGroup
-  name: 'network-${uniqueString(currentDate)}'
+  name: 'resources-${uniqueString(currentDate)}'
   params: {
     parVwanHub1Region: parVwanHub1Region
     parVwanHub2Region: parVwanHub2Region
