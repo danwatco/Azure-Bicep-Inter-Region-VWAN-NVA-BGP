@@ -268,6 +268,9 @@ var varVnetSpoke5Subnets = [
       networkSecurityGroup: {
         id: resNsgSpoke5.id
       }
+      routeTable: {
+        id: resRouteTableSpoke5.id
+      }
     }
   }
   {
@@ -294,6 +297,9 @@ var varVnetSpoke6Subnets = [
       defaultOutboundAccess: true
       networkSecurityGroup: {
         id: resNsgSpoke6.id
+      }
+      routeTable: {
+        id: resRouteTableSpoke6.id
       }
     }
   }
@@ -322,6 +328,9 @@ var varVnetSpoke7Subnets = [
       networkSecurityGroup: {
         id: resNsgSpoke7.id
       }
+      routeTable: {
+        id: resRouteTableSpoke7.id
+      }
     }
   }
   {
@@ -349,6 +358,9 @@ var varVnetSpoke8Subnets = [
       networkSecurityGroup: {
         id: resNsgSpoke8.id
       }
+      routeTable: {
+        id: resRouteTableSpoke8.id
+      }
     }
   }
   {
@@ -362,9 +374,11 @@ var varVnetSpoke8Subnets = [
   }
 ]
 
-// --------------------
-// RESOURCES Networking
-// --------------------
+var varVpnSharedKey = 'abc123'
+
+// ---------------------
+// RESOURCES Virtual WAN
+// ---------------------
 
 resource resVwan 'Microsoft.Network/virtualWans@2024-01-01' = {
   name: varVwanName
@@ -414,9 +428,9 @@ resource resVwanHub2 'Microsoft.Network/virtualHubs@2024-01-01' = {
   }
 }
  
-// ----------------------------------------------------------
-// RESOURCES Wait 30 mins for vWAN Hubs to finish initialising
-// ----------------------------------------------------------
+// -----------------------------------------------------------
+// RESOURCES Wait 30 mins for VWAN Hubs to finish initialising
+// -----------------------------------------------------------
 
 @description('azPowerShellVersion - https://mcr.microsoft.com/v2/azuredeploymentscripts-powershell/tags/list')
 resource resWait 'Microsoft.Resources/deploymentScripts@2023-08-01' = {
@@ -431,13 +445,13 @@ resource resWait 'Microsoft.Resources/deploymentScripts@2023-08-01' = {
     azPowerShellVersion: '12.2'
     retentionInterval: 'PT1H'
     cleanupPreference: 'Always'
-    scriptContent: 'start-sleep -Seconds 1800'
+    scriptContent: 'start-sleep -Seconds 1800' // 1,800 seconds = 30 minutes
   }
 }
 
-// ----------------------------------------------
-// RESOURCES VNETs, NSGs, Route Tables & Peerings
-// ----------------------------------------------
+// ---------------------------------
+// RESOURCES Network Security Groups
+// ---------------------------------
 
 resource resNsgBranch1 'Microsoft.Network/networkSecurityGroups@2024-01-01' = {
   name: 'nsg-${varVnetBranch1Name}'
@@ -729,6 +743,10 @@ resource resNsgSpoke8 'Microsoft.Network/networkSecurityGroups@2024-01-01' = {
   }
 }
 
+// ----------------------
+// RESOURCES Route Tables
+// ----------------------
+
 resource resRouteTableSpoke5 'Microsoft.Network/routeTables@2024-01-01' = {
   name: 'rt-${varVnetSpoke5Name}'
   location: varVnetSpoke5Region
@@ -904,6 +922,10 @@ resource resRouteTableSpoke8 'Microsoft.Network/routeTables@2024-01-01' = {
     ]
   }
 }
+
+// --------------------------
+// RESOURCES Virtual Networks
+// --------------------------
 
 resource resVnetBranch1 'Microsoft.Network/virtualNetworks@2024-01-01' = {
   name: varVnetBranch1Name
@@ -1105,6 +1127,10 @@ resource resVnetSpoke8 'Microsoft.Network/virtualNetworks@2024-01-01' = {
   }
 }
 
+// ----------------------------------
+// RESOURCES Virtual Network Peerings
+// ----------------------------------
+
 resource resVnetPeeringSpoke2to5 'Microsoft.Network/virtualNetworks/virtualNetworkPeerings@2024-01-01' = {
   name: 'vnetpeering-${resVnetSpoke5.name}'
   parent: resVnetSpoke2
@@ -1209,6 +1235,10 @@ resource resVnetPeeringSpoke8to4 'Microsoft.Network/virtualNetworks/virtualNetwo
   }
 }
 
+// ------------------------------------------
+// RESOURCES VWAN Virtual Network Connections
+// ------------------------------------------
+
 resource resHubVirtualNetworkConnectionHub1Spoke1 'Microsoft.Network/virtualHubs/hubVirtualNetworkConnections@2024-01-01' = {
   name: 'hubvnetconnection-${resVnetSpoke1.name}'
   parent: resVwanHub1
@@ -1249,9 +1279,9 @@ resource resHubVirtualNetworkConnectionHub2Spoke4 'Microsoft.Network/virtualHubs
   }
 }
 
-// ----------------------------------------
-// RESOURCES (VPN Gateways & VNET Gateways)
-// ----------------------------------------
+// -------------------------------------------------------------
+// RESOURCES VNET Gateways, Local Network Gateways & Connections
+// -------------------------------------------------------------
 
 resource resPipBranch1VpnGw 'Microsoft.Network/publicIPAddresses@2024-01-01' = {
   name: 'vnetgw-${resVnetBranch1.name}-pip'
@@ -1349,108 +1379,6 @@ resource resVnetGatewayBranch2 'Microsoft.Network/virtualNetworkGateways@2024-01
   }
 }
 
-resource resVpnGatewayHub1 'Microsoft.Network/vpnGateways@2024-01-01' = {
-  name: 'vpngw-${resVwanHub1.name}'
-  location: parVwanHub1Region
-  dependsOn: [
-    resWait
-  ]
-  properties: {
-    virtualHub: {
-      id: resVwanHub1.id
-    }
-  }
-}
-
-resource resVpnGatewayHub2 'Microsoft.Network/vpnGateways@2024-01-01' = {
-  name: 'vpngw-${resVwanHub2.name}'
-  location: parVwanHub2Region
-  dependsOn: [
-    resWait
-  ]
-  properties: {
-    virtualHub: {
-      id: resVwanHub2.id
-    }
-  }
-}
-
-resource resVpnSiteBranch1 'Microsoft.Network/vpnSites@2024-01-01' = {
-  name: 'vpnsite-${resVnetBranch1.name}'
-  location: varVnetBranch1Region
-  properties: {
-    virtualWan: {
-      id: resVwan.id
-    }
-    ipAddress: resPipBranch1VpnGw.properties.ipAddress
-    bgpProperties: {
-      asn: varOnPremisesAsn
-      bgpPeeringAddress: resVnetGatewayBranch1.properties.bgpSettings.bgpPeeringAddress
-      bgpPeeringAddresses: [
-        {
-          ipconfigurationId: resVnetGatewayBranch1.properties.ipConfigurations[0].id
-        }
-      ]
-    }
-    deviceProperties: {
-      deviceModel: 'Azure'
-      deviceVendor: 'Microsoft'
-      linkSpeedInMbps: 50
-    }
-  }
-}
-
-resource resVpnSiteBranch2 'Microsoft.Network/vpnSites@2024-01-01' = {
-  name: 'vpnsite-${resVnetBranch2.name}'
-  location: varVnetBranch2Region
-  properties: {
-    virtualWan: {
-      id: resVwan.id
-    }
-    ipAddress: resPipBranch2VpnGw.properties.ipAddress
-    bgpProperties: {
-      asn: varOnPremisesAsn
-      bgpPeeringAddress: resVnetGatewayBranch2.properties.bgpSettings.bgpPeeringAddress
-      bgpPeeringAddresses: [
-        {
-          ipconfigurationId: resVnetGatewayBranch2.properties.ipConfigurations[0].id
-        }
-      ]
-    }
-    deviceProperties: {
-      deviceModel: 'Azure'
-      deviceVendor: 'Microsoft'
-      linkSpeedInMbps: 50
-    }
-  }
-}
-
-resource resVpnConnectionHub1Branch1 'Microsoft.Network/vpnGateways/vpnConnections@2024-01-01' = {
-  name: 'vpnconnection-${resVnetBranch1.name}'
-  parent: resVpnGatewayHub1
-  properties: {
-    remoteVpnSite: {
-      id: resVpnSiteBranch1.id
-    }
-    sharedKey: 'abc123'
-    enableInternetSecurity: true
-    enableBgp: true
-  }
-}
-
-resource resVpnConnectionHub2Branch2 'Microsoft.Network/vpnGateways/vpnConnections@2024-01-01' = {
-  name: 'vpnconnection-${resVnetBranch2.name}'
-  parent: resVpnGatewayHub2
-  properties: {
-    remoteVpnSite: {
-      id: resVpnSiteBranch2.id
-    }
-    sharedKey: 'abc123'
-    enableInternetSecurity: true
-    enableBgp: true
-  }
-}
-
 resource resLocalNetworkGatewayHub1Gw1 'Microsoft.Network/localNetworkGateways@2024-01-01' = {
   name: 'localgw-${resVwanHub1.name}-gw1'
   location: parVwanHub1Region
@@ -1515,7 +1443,7 @@ resource resConnectionBranch1Hub1Gw1 'Microsoft.Network/connections@2024-01-01' 
     connectionProtocol: 'IKEv2'
     routingWeight: 10
     enableBgp: true
-    sharedKey: 'abc123'
+    sharedKey: varVpnSharedKey
   }
 }
 
@@ -1535,7 +1463,7 @@ resource resConnectionBranch1Hub1Gw2 'Microsoft.Network/connections@2024-01-01' 
     connectionProtocol: 'IKEv2'
     routingWeight: 10
     enableBgp: true
-    sharedKey: 'abc123'
+    sharedKey: varVpnSharedKey
   }
 }
 
@@ -1555,7 +1483,7 @@ resource resConnectionBranch2Hub2Gw1 'Microsoft.Network/connections@2024-01-01' 
     connectionProtocol: 'IKEv2'
     routingWeight: 10
     enableBgp: true
-    sharedKey: 'abc123'
+    sharedKey: varVpnSharedKey
   }
 }
 
@@ -1575,13 +1503,119 @@ resource resConnectionBranch2Hub2Gw2 'Microsoft.Network/connections@2024-01-01' 
     connectionProtocol: 'IKEv2'
     routingWeight: 10
     enableBgp: true
-    sharedKey: 'abc123'
+    sharedKey: varVpnSharedKey
   }
 }
 
-// -----------------------------------
-// RESOURCES (NVAs in Spokes 2 & 4)
-// -----------------------------------
+// ------------------------------------------------
+// RESOURCES VWAN VPN Gateways, Sites & Connections
+// ------------------------------------------------
+
+resource resVpnGatewayHub1 'Microsoft.Network/vpnGateways@2024-01-01' = {
+  name: 'vpngw-${resVwanHub1.name}'
+  location: parVwanHub1Region
+  dependsOn: [
+    resWait
+  ]
+  properties: {
+    virtualHub: {
+      id: resVwanHub1.id
+    }
+  }
+}
+
+resource resVpnGatewayHub2 'Microsoft.Network/vpnGateways@2024-01-01' = {
+  name: 'vpngw-${resVwanHub2.name}'
+  location: parVwanHub2Region
+  dependsOn: [
+    resWait
+  ]
+  properties: {
+    virtualHub: {
+      id: resVwanHub2.id
+    }
+  }
+}
+
+resource resVpnConnectionHub1Branch1 'Microsoft.Network/vpnGateways/vpnConnections@2024-01-01' = {
+  name: 'vpnconnection-${resVnetBranch1.name}'
+  parent: resVpnGatewayHub1
+  properties: {
+    remoteVpnSite: {
+      id: resVpnSiteBranch1.id
+    }
+    sharedKey: varVpnSharedKey
+    enableInternetSecurity: true
+    enableBgp: true
+  }
+}
+
+resource resVpnConnectionHub2Branch2 'Microsoft.Network/vpnGateways/vpnConnections@2024-01-01' = {
+  name: 'vpnconnection-${resVnetBranch2.name}'
+  parent: resVpnGatewayHub2
+  properties: {
+    remoteVpnSite: {
+      id: resVpnSiteBranch2.id
+    }
+    sharedKey: varVpnSharedKey
+    enableInternetSecurity: true
+    enableBgp: true
+  }
+}
+
+resource resVpnSiteBranch1 'Microsoft.Network/vpnSites@2024-01-01' = {
+  name: 'vpnsite-${resVnetBranch1.name}'
+  location: varVnetBranch1Region
+  properties: {
+    virtualWan: {
+      id: resVwan.id
+    }
+    ipAddress: resPipBranch1VpnGw.properties.ipAddress
+    bgpProperties: {
+      asn: varOnPremisesAsn
+      bgpPeeringAddress: resVnetGatewayBranch1.properties.bgpSettings.bgpPeeringAddress
+      bgpPeeringAddresses: [
+        {
+          ipconfigurationId: resVnetGatewayBranch1.properties.ipConfigurations[0].id
+        }
+      ]
+    }
+    deviceProperties: {
+      deviceModel: 'Azure'
+      deviceVendor: 'Microsoft'
+      linkSpeedInMbps: 50
+    }
+  }
+}
+
+resource resVpnSiteBranch2 'Microsoft.Network/vpnSites@2024-01-01' = {
+  name: 'vpnsite-${resVnetBranch2.name}'
+  location: varVnetBranch2Region
+  properties: {
+    virtualWan: {
+      id: resVwan.id
+    }
+    ipAddress: resPipBranch2VpnGw.properties.ipAddress
+    bgpProperties: {
+      asn: varOnPremisesAsn
+      bgpPeeringAddress: resVnetGatewayBranch2.properties.bgpSettings.bgpPeeringAddress
+      bgpPeeringAddresses: [
+        {
+          ipconfigurationId: resVnetGatewayBranch2.properties.ipConfigurations[0].id
+        }
+      ]
+    }
+    deviceProperties: {
+      deviceModel: 'Azure'
+      deviceVendor: 'Microsoft'
+      linkSpeedInMbps: 50
+    }
+  }
+}
+
+// ------------------------------
+// RESOURCES NVAs in Spokes 2 & 4
+// ------------------------------
 
 resource resNvaSpoke2 'Microsoft.Compute/virtualMachines@2024-07-01' = {
   name: 'nva-${resVnetSpoke2.name}'
@@ -1883,9 +1917,9 @@ resource resNvaSpoke4Schedule 'Microsoft.DevTestLab/schedules@2018-09-15' = {
   }
 }
 
-// -----------------------------------------------------------
-// RESOURCES (BGP Connections between FRR VMs and Hub Routers)
-// -----------------------------------------------------------
+// ----------------------------------------------------
+// RESOURCES BGP Connections between Hub Routers & NVAs
+// ----------------------------------------------------
 
 resource resVwanHub1VmSpoke2BgpConnection 'Microsoft.Network/virtualHubs/bgpConnections@2024-01-01' = {
   name: 'bgpconnection-${resNvaSpoke2.name}'
@@ -1914,9 +1948,9 @@ resource resVwanHub2VmSpoke4BgpConnection 'Microsoft.Network/virtualHubs/bgpConn
   }
 }
 
-// --------------------
-// RESOURCES (Test VMs)
-// --------------------
+// -------------------------------
+// RESOURCES Test Virtual Machines
+// -------------------------------
 
 @description('List of test VMs')
 var varTestVMs = [
@@ -2125,9 +2159,9 @@ resource resTestVmsSchedule 'Microsoft.DevTestLab/schedules@2018-09-15' = [for v
   }
 }]
 
-// -------------------------
-// RESOURCES (Bastion Hosts)
-// -------------------------
+// -----------------------
+// RESOURCES Bastion Hosts
+// -----------------------
 
 @description('List of Bastion hosts')
 var varBastionHosts = [
